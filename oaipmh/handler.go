@@ -17,6 +17,7 @@
 package oaipmh
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -69,24 +70,24 @@ func (a *VLOHandler) getReqResp(argSource url.Values) (*OAIPMHRequest, *OAIPMHRe
 
 	// get verb operation
 	if !argSource.Has(ArgVerb) {
-		resp.Errors.Add(ErrorCodeBadArgument, "Missing required argument `"+ArgVerb+"`")
+		resp.Errors.Add(ErrorCodeBadArgument, fmt.Sprintf("Missing required argument `%s`", ArgVerb))
 		return req, resp, nil
 	}
 	req.Verb = getTypedArg[Verb](argSource, ArgVerb)
 	if err := req.Verb.Validate(); err != nil {
-		resp.Errors.Add(ErrorCodeBadVerb, "Invalid verb `"+req.Verb.String()+"`")
+		resp.Errors.Add(ErrorCodeBadVerb, fmt.Sprintf("Invalid verb `%s`", req.Verb))
 		return req, resp, nil
 	}
 
 	// check required arguments
 	if arg := req.Verb.ValidateRequiredArgs(argSource); arg != "" {
-		resp.Errors.Add(ErrorCodeBadArgument, "Missing required argument `"+arg+"` for verb "+req.Verb.String())
+		resp.Errors.Add(ErrorCodeBadArgument, fmt.Sprintf("Missing required argument `%s` for verb `%s`", arg, req.Verb))
 		return req, resp, nil
 	}
 	// check allowed arguments
 	for k := range argSource {
 		if !req.Verb.ValidateArg(k) {
-			resp.Errors.Add(ErrorCodeBadArgument, "Invalid argument `"+k+"` for verb "+req.Verb.String())
+			resp.Errors.Add(ErrorCodeBadArgument, fmt.Sprintf("Invalid argument `%s` for verb `%s`", k, req.Verb))
 			return req, resp, nil
 		}
 	}
@@ -179,7 +180,7 @@ func (a *VLOHandler) handleRequest(ctx *gin.Context, req *OAIPMHRequest, resp *O
 		}
 
 	default:
-		resp.Errors.Add(ErrorCodeBadArgument, "Verb not implemented `"+req.Verb.String()+"`")
+		resp.Errors.Add(ErrorCodeBadArgument, fmt.Sprintf("Verb not implemented `%s`", req.Verb))
 		writeXMLResponse(ctx.Writer, http.StatusNotImplemented, resp)
 		return
 	}

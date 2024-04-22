@@ -60,7 +60,7 @@ type OAIPMHResponse struct {
 type OAIPMHErrors []OAIPMHError
 
 func (r *OAIPMHErrors) Add(code OAIPMHErrorCode, message string) {
-	*r = append(*r, OAIPMHError{Code: code.String(), Message: message})
+	*r = append(*r, OAIPMHError{Code: code, Message: message})
 }
 
 func (r *OAIPMHErrors) HasErrors() bool {

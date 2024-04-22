@@ -18,10 +18,6 @@ package cnchook
 
 type MetadataType string
 
-func (m MetadataType) String() string {
-	return string(m)
-}
-
 const (
 	CorpusMetadataType  MetadataType = "corpus"
 	ServiceMetadataType MetadataType = "service"

@@ -42,10 +42,6 @@ const (
 
 type Verb string
 
-func (v Verb) String() string {
-	return string(v)
-}
-
 func (v Verb) Validate() error {
 	if v == VerbGetRecord || v == VerbIdentify ||
 		v == VerbListIdentifiers || v == VerbListMetadataFormats ||
