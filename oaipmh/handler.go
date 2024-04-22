@@ -55,34 +55,39 @@ type VLOHook interface {
 }
 
 type VLOHandler struct {
-	hook VLOHook
+	basePath string
+	hook     VLOHook
 }
 
-func getReqResp(ctx *gin.Context, argSource url.Values) (*OAIPMHRequest, *OAIPMHResponse) {
-	req := &OAIPMHRequest{URL: ctx.Request.Host + ctx.Request.URL.Path}
+func (a *VLOHandler) getReqResp(argSource url.Values) (*OAIPMHRequest, *OAIPMHResponse, error) {
+	url, err := url.JoinPath(a.basePath, "oai")
+	if err != nil {
+		return nil, nil, err
+	}
+	req := &OAIPMHRequest{URL: url}
 	resp := NewOAIPMHResponse(req)
 
 	// get verb operation
 	if !argSource.Has(ArgVerb) {
 		resp.Errors.Add(ErrorCodeBadArgument, "Missing required argument `"+ArgVerb+"`")
-		return req, resp
+		return req, resp, nil
 	}
 	req.Verb = getTypedArg[Verb](argSource, ArgVerb)
 	if err := req.Verb.Validate(); err != nil {
 		resp.Errors.Add(ErrorCodeBadVerb, "Invalid verb `"+req.Verb.String()+"`")
-		return req, resp
+		return req, resp, nil
 	}
 
 	// check required arguments
 	if arg := req.Verb.ValidateRequiredArgs(argSource); arg != "" {
 		resp.Errors.Add(ErrorCodeBadArgument, "Missing required argument `"+arg+"` for verb "+req.Verb.String())
-		return req, resp
+		return req, resp, nil
 	}
 	// check allowed arguments
 	for k := range argSource {
 		if !req.Verb.ValidateArg(k) {
 			resp.Errors.Add(ErrorCodeBadArgument, "Invalid argument `"+k+"` for verb "+req.Verb.String())
-			return req, resp
+			return req, resp, nil
 		}
 	}
 
@@ -92,7 +97,7 @@ func getReqResp(ctx *gin.Context, argSource url.Values) (*OAIPMHRequest, *OAIPMH
 	req.Until = getTypedArg[string](argSource, ArgUntil)
 	req.Set = getTypedArg[string](argSource, ArgSet)
 	req.ResumptionToken = getTypedArg[string](argSource, ArgResumptionToken)
-	return req, resp
+	return req, resp, nil
 }
 
 func (a *VLOHandler) handleRequest(ctx *gin.Context, req *OAIPMHRequest, resp *OAIPMHResponse) {
@@ -104,6 +109,7 @@ func (a *VLOHandler) handleRequest(ctx *gin.Context, req *OAIPMHRequest, resp *O
 		errors, httpCode = ans.Errors, ans.HTTPCode
 		if ans.NoError() {
 			resp.Identify = &ans.Data
+			resp.Identify.BaseURL = req.URL
 			resp.Identify.ProtocolVersion = resp.ProtocolVersion
 		}
 
@@ -182,7 +188,12 @@ func (a *VLOHandler) handleRequest(ctx *gin.Context, req *OAIPMHRequest, resp *O
 }
 
 func (a *VLOHandler) HandleOAIGet(ctx *gin.Context) {
-	req, resp := getReqResp(ctx, ctx.Request.URL.Query())
+	req, resp, err := a.getReqResp(ctx.Request.URL.Query())
+	if err != nil {
+		log.Error().Err(err).Send()
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
 	if resp.Errors.HasErrors() {
 		writeXMLResponse(ctx.Writer, http.StatusBadRequest, resp)
 		return
@@ -196,7 +207,12 @@ func (a *VLOHandler) HandleOAIPost(ctx *gin.Context) {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	req, resp := getReqResp(ctx, ctx.Request.PostForm)
+	req, resp, err := a.getReqResp(ctx.Request.PostForm)
+	if err != nil {
+		log.Error().Err(err).Send()
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
 	if resp.Errors.HasErrors() {
 		writeXMLResponse(ctx.Writer, http.StatusBadRequest, resp)
 		return
@@ -219,6 +235,9 @@ func (a *VLOHandler) HandleSelfLink(ctx *gin.Context) {
 	}
 }
 
-func NewVLOHandler(hook VLOHook) *VLOHandler {
-	return &VLOHandler{hook: hook}
+func NewVLOHandler(basePath string, hook VLOHook) *VLOHandler {
+	return &VLOHandler{
+		basePath: basePath,
+		hook:     hook,
+	}
 }

@@ -34,7 +34,6 @@ type OAIPMHRecordHeader struct {
 
 type OAIPMHIdentify struct {
 	RepositoryName    string           `xml:"repositoryName"`
-	BaseURL           string           `xml:"baseURL"`
 	AdminEmail        []string         `xml:"adminEmail"`
 	EarliestDatestamp string           `xml:"earliestDatestamp"`
 	DeletedRecord     string           `xml:"deletedRecord"` // are we tracking deleted records no/transient/persistent?
@@ -42,7 +41,9 @@ type OAIPMHIdentify struct {
 	Compression       string           `xml:"compression,omitempty"`
 	Description       []ElementWrapper `xml:"description,omitempty"`
 
-	ProtocolVersion string `xml:"protocolVersion"` // filled automatically by handler
+	// filled automatically by handler
+	BaseURL         string `xml:"baseURL"`
+	ProtocolVersion string `xml:"protocolVersion"`
 }
 
 // --------------------- ListMetadataFormats ------------------
