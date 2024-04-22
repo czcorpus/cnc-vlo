@@ -1,0 +1,23 @@
+{
+    "listenAddress" : "127.0.0.1",
+    "listenPort": 8080,
+    "serverReadTimeoutSecs": 120,
+    "serverWriteTimeoutSecs": 60,
+    "logFile": null,
+    "logLevel": "debug",
+    "timeZone": "UTC",
+    "cncDb": {
+        "host": "localhost:3306",
+        "user": "kontext",
+        "passwd": "kontext-secret",
+        "db": "kontext"
+    },
+    "repositoryInfo": {
+        "name": "CNC metadata repository",
+        "baseUrl": "http://localhost:8080",
+        "adminEmail": ["admin@cnc.cz"]
+    },
+    "metadataValues": {
+        "publisher": "UCNK"
+    }
+}
