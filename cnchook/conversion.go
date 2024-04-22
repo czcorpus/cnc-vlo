@@ -57,12 +57,12 @@ func (c *CNCHook) dcRecordFromData(data *cncdb.DBData) oaipmh.OAIPMHRecord {
 	metadata.Description.Add(data.Description.String, "en")
 	metadata.Rights.Add(data.License, "")
 
-	switch data.Type {
-	case CorpusMetadataType.String():
+	switch MetadataType(data.Type) {
+	case CorpusMetadataType:
 		if data.CorpusData.Locale.String != "" {
 			metadata.Language.Add(strings.Split(data.CorpusData.Locale.String, "_")[0], "")
 		}
-	case ServiceMetadataType.String():
+	case ServiceMetadataType:
 	default:
 	}
 
@@ -107,8 +107,8 @@ func (c *CNCHook) cmdiLindatClarinRecordFromData(data *cncdb.DBData) oaipmh.OAIP
 			{Value: data.Link.String},
 		}
 	}
-	switch data.Type {
-	case CorpusMetadataType.String():
+	switch MetadataType(data.Type) {
+	case CorpusMetadataType:
 		profile.DataInfoInfo.SizeInfo = &[]components.SizeComponent{
 			{Size: fmt.Sprint(data.CorpusData.Size.Int32), Unit: "words"},
 		}
@@ -117,7 +117,7 @@ func (c *CNCHook) cmdiLindatClarinRecordFromData(data *cncdb.DBData) oaipmh.OAIP
 				{Name: "TODO language name", Code: strings.Split(data.CorpusData.Locale.String, "_")[0]},
 			}
 		}
-	case ServiceMetadataType.String():
+	case ServiceMetadataType:
 	default:
 	}
 

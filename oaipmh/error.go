@@ -30,11 +30,7 @@ const (
 	ErrorCodeNoSetHierarchy          OAIPMHErrorCode = "noSetHierarchy"
 )
 
-func (e OAIPMHErrorCode) String() string {
-	return string(e)
-}
-
 type OAIPMHError struct {
-	Code    string `xml:"code,attr"`
-	Message string `xml:",chardata"`
+	Code    OAIPMHErrorCode `xml:"code,attr"`
+	Message string          `xml:",chardata"`
 }
