@@ -63,7 +63,7 @@ func runApiServer(
 	engine.NoRoute(uniresp.NotFoundHandler)
 
 	hook := cnchook.NewCNCHook(conf, db)
-	handler := oaipmh.NewVLOHandler(hook)
+	handler := oaipmh.NewVLOHandler(conf.RepositoryInfo.BaseURL, hook)
 	engine.GET("/oai", handler.HandleOAIGet)
 	engine.POST("/oai", handler.HandleOAIPost)
 	engine.GET("/record/:recordId", handler.HandleSelfLink)
