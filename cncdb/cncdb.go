@@ -59,14 +59,14 @@ type CorpusData struct {
 
 func (c *CNCMySQLHandler) GetFirstDate() (string, error) {
 	var date string
-	row := c.conn.QueryRow("SELECT MIN(created) FROM metadata_common")
+	row := c.conn.QueryRow("SELECT MIN(created) FROM vlo_metadata_common")
 	err := row.Scan(&date)
 	return date, err
 }
 
 func (c *CNCMySQLHandler) IdentifierExists(identifier string) (bool, error) {
 	var id int
-	row := c.conn.QueryRow("SELECT id FROM metadata_common WHERE id = ? AND deleted = FALSE", identifier)
+	row := c.conn.QueryRow("SELECT id FROM vlo_metadata_common WHERE id = ? AND deleted = FALSE", identifier)
 	err := row.Scan(&id)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -87,9 +87,9 @@ func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 				"COALESCE(c.description_en, ms.description), "+
 				"COALESCE(c.web, ms.link), "+
 				"c.size, c.locale "+
-				"FROM metadata_common AS m "+
-				"LEFT JOIN metadata_corpus AS mc ON m.corpus_metadata_id = mc.id "+
-				"LEFT JOIN metadata_service AS ms ON m.service_metadata_id = ms.id "+
+				"FROM vlo_metadata_common AS m "+
+				"LEFT JOIN vlo_metadata_corpus AS mc ON m.corpus_metadata_id = mc.id "+
+				"LEFT JOIN vlo_metadata_service AS ms ON m.service_metadata_id = ms.id "+
 				"LEFT JOIN %s AS c ON mc.corpus_name = c.name "+
 				"JOIN %s AS u ON m.contact_user_id = u.id "+
 				"WHERE m.id = ? AND m.deleted = FALSE",
@@ -133,9 +133,9 @@ func (c *CNCMySQLHandler) ListRecordInfo(from string, until string) ([]DBData, e
 			"COALESCE(c.description_en, ms.description), "+
 			"COALESCE(c.web, ms.link), "+
 			"c.size, c.locale "+
-			"FROM metadata_common AS m "+
-			"LEFT JOIN metadata_corpus AS mc ON m.corpus_metadata_id = mc.id "+
-			"LEFT JOIN metadata_service AS ms ON m.service_metadata_id = ms.id "+
+			"FROM vlo_metadata_common AS m "+
+			"LEFT JOIN vlo_metadata_corpus AS mc ON m.corpus_metadata_id = mc.id "+
+			"LEFT JOIN vlo_metadata_service AS ms ON m.service_metadata_id = ms.id "+
 			"LEFT JOIN %s AS c ON mc.corpus_name = c.name "+
 			"JOIN %s AS u ON m.contact_user_id = u.id",
 		c.corporaTableName, c.userTableName,
