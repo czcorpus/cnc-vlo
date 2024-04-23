@@ -10,7 +10,13 @@
         "host": "localhost:3306",
         "user": "kontext",
         "passwd": "kontext-secret",
-        "db": "kontext"
+        "db": "kontext",
+        "overrides": {
+            "corporaTableName": "corpora",
+            "userTableName": "user",
+            "userTableFirstNameCol": "firstName",
+            "userTableLastNameCol": "surname"
+        }
     },
     "repositoryInfo": {
         "name": "CNC metadata repository",

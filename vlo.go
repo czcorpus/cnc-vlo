@@ -133,19 +133,40 @@ func main() {
 
 	switch action {
 	case "start":
-		cTableName := "kontext_corpus"
-		if conf.CNCDB.OverrideCorporaTableName != "" {
+		if conf.CNCDB.Overrides.CorporaTableName != "" {
 			log.Warn().Msgf(
-				"Overriding default corpora table name to '%s'", conf.CNCDB.OverrideCorporaTableName)
-			cTableName = conf.CNCDB.OverrideCorporaTableName
+				"Overriding default corpora table name to '%s'", conf.CNCDB.Overrides.CorporaTableName)
+
+		} else {
+			conf.CNCDB.Overrides.CorporaTableName = "kontext_corpus"
 		}
-		userTableName := "kontext_user"
-		if conf.CNCDB.OverrideUserTableName != "" {
+		if conf.CNCDB.Overrides.UserTableName != "" {
 			log.Warn().Msgf(
-				"Overriding default parallel corpora table name to '%s'", conf.CNCDB.OverrideUserTableName)
-			userTableName = conf.CNCDB.OverrideUserTableName
+				"Overriding default user table name to '%s'", conf.CNCDB.Overrides.UserTableName)
+
+		} else {
+			conf.CNCDB.Overrides.UserTableName = "kontext_user"
 		}
-		db, err := cncdb.NewCNCMySQLHandler(conf.CNCDB.Host, conf.CNCDB.User, conf.CNCDB.Passwd, conf.CNCDB.Name, cTableName, userTableName)
+		if conf.CNCDB.Overrides.UserTableFirstNameCol != "" {
+			log.Warn().Msgf(
+				"Overriding default user table column for the `first name` to '%s'",
+				conf.CNCDB.Overrides.UserTableFirstNameCol,
+			)
+
+		} else {
+			conf.CNCDB.Overrides.UserTableFirstNameCol = "firstname"
+		}
+
+		if conf.CNCDB.Overrides.UserTableLastNameCol != "" {
+			log.Warn().Msgf(
+				"Overriding default user table column for the `first name` to '%s'",
+				conf.CNCDB.Overrides.UserTableLastNameCol,
+			)
+
+		} else {
+			conf.CNCDB.Overrides.UserTableLastNameCol = "lastname"
+		}
+		db, err := cncdb.NewCNCMySQLHandler(conf.CNCDB)
 		if err != nil {
 			log.Fatal().Err(err).Msg("Failed to create DB connection")
 		}
