@@ -25,10 +25,18 @@ import (
 	"github.com/go-sql-driver/mysql"
 )
 
+// DBOverrides handles differences between KonText default
+// database schema and the CNC-one which is slightly different
+type DBOverrides struct {
+	CorporaTableName      string `json:"corporaTableName"`
+	UserTableName         string `json:"userTableName"`
+	UserTableFirstNameCol string `json:"userTableFirstNameCol"`
+	UserTableLastNameCol  string `json:"userTableLastNameCol"`
+}
+
 type CNCMySQLHandler struct {
-	conn             *sql.DB
-	corporaTableName string
-	userTableName    string
+	conn      *sql.DB
+	overrides DBOverrides
 }
 
 type DBData struct {
@@ -82,7 +90,7 @@ func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 	row := c.conn.QueryRow(
 		fmt.Sprintf(
 			"SELECT m.id, GREATEST(m.created, m.updated), m.type, m.title, m.license_info, m.authors, "+
-				"u.firstname, u.lastname, u.email, u.affiliation, "+
+				"u.%s, u.%s, u.email, u.affiliation, "+
 				"COALESCE(c.name, ms.name), "+
 				"COALESCE(c.description_en, ms.description), "+
 				"COALESCE(c.web, ms.link), "+
@@ -93,7 +101,8 @@ func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 				"LEFT JOIN %s AS c ON mc.corpus_name = c.name "+
 				"JOIN %s AS u ON m.contact_user_id = u.id "+
 				"WHERE m.id = ? AND m.deleted = FALSE",
-			c.corporaTableName, c.userTableName,
+			c.overrides.UserTableFirstNameCol, c.overrides.UserTableLastNameCol,
+			c.overrides.CorporaTableName, c.overrides.UserTableName,
 		), identifier,
 	)
 	err := row.Scan(
@@ -128,7 +137,7 @@ func (c *CNCMySQLHandler) ListRecordInfo(from string, until string) ([]DBData, e
 	}
 	query := fmt.Sprintf(
 		"SELECT m.id, GREATEST(m.created, m.updated), m.type, m.title, m.license_info, m.authors, "+
-			"u.firstname, u.lastname, u.email, u.affiliation, "+
+			"u.%s, u.%s, u.email, u.affiliation, "+
 			"COALESCE(c.name, ms.name), "+
 			"COALESCE(c.description_en, ms.description), "+
 			"COALESCE(c.web, ms.link), "+
@@ -138,7 +147,8 @@ func (c *CNCMySQLHandler) ListRecordInfo(from string, until string) ([]DBData, e
 			"LEFT JOIN vlo_metadata_service AS ms ON m.service_metadata_id = ms.id "+
 			"LEFT JOIN %s AS c ON mc.corpus_name = c.name "+
 			"JOIN %s AS u ON m.contact_user_id = u.id",
-		c.corporaTableName, c.userTableName,
+		c.overrides.UserTableFirstNameCol, c.overrides.UserTableLastNameCol,
+		c.overrides.CorporaTableName, c.overrides.UserTableName,
 	)
 	if len(whereClause) > 0 {
 		query += " WHERE " + strings.Join(whereClause, " AND ")
@@ -164,13 +174,13 @@ func (c *CNCMySQLHandler) ListRecordInfo(from string, until string) ([]DBData, e
 	return results, nil
 }
 
-func NewCNCMySQLHandler(host, user, pass, dbName, corporaTableName, userTableName string) (*CNCMySQLHandler, error) {
+func NewCNCMySQLHandler(cnf DatabaseSetup) (*CNCMySQLHandler, error) {
 	conf := mysql.NewConfig()
 	conf.Net = "tcp"
-	conf.Addr = host
-	conf.User = user
-	conf.Passwd = pass
-	conf.DBName = dbName
+	conf.Addr = cnf.Host
+	conf.User = cnf.User
+	conf.Passwd = cnf.Passwd
+	conf.DBName = cnf.Name
 	conf.ParseTime = true
 	conf.Loc = time.Local
 	db, err := sql.Open("mysql", conf.FormatDSN())
@@ -178,8 +188,7 @@ func NewCNCMySQLHandler(host, user, pass, dbName, corporaTableName, userTableNam
 		return nil, err
 	}
 	return &CNCMySQLHandler{
-		conn:             db,
-		corporaTableName: corporaTableName,
-		userTableName:    userTableName,
+		conn:      db,
+		overrides: cnf.Overrides,
 	}, nil
 }
