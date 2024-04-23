@@ -41,7 +41,7 @@ type CNCMySQLHandler struct {
 
 type DBData struct {
 	ID            int
-	Date          string
+	Date          time.Time
 	Type          string
 	Name          string
 	Title         string
@@ -65,8 +65,8 @@ type CorpusData struct {
 	Locale sql.NullString
 }
 
-func (c *CNCMySQLHandler) GetFirstDate() (string, error) {
-	var date string
+func (c *CNCMySQLHandler) GetFirstDate() (time.Time, error) {
+	var date time.Time
 	row := c.conn.QueryRow("SELECT MIN(created) FROM vlo_metadata_common")
 	err := row.Scan(&date)
 	return date, err
@@ -120,19 +120,15 @@ func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 	return &data, nil
 }
 
-func (c *CNCMySQLHandler) ListRecordInfo(from string, until string) ([]DBData, error) {
+func (c *CNCMySQLHandler) ListRecordInfo(from *time.Time, until *time.Time) ([]DBData, error) {
 	whereClause := []string{"m.deleted = ?"}
 	whereValues := []any{"FALSE"}
-	if from != "" {
+	if from != nil {
 		whereClause = append(whereClause, "GREATEST(m.created, m.updated) >= ?")
 		whereValues = append(whereValues, from)
 	}
-	if until != "" {
-		if strings.Contains(until, "T") {
-			whereClause = append(whereClause, "GREATEST(m.created, m.updated) <= ?")
-		} else {
-			whereClause = append(whereClause, "GREATEST(m.created, m.updated) < ? + INTERVAL 1 DAY")
-		}
+	if until != nil {
+		whereClause = append(whereClause, "GREATEST(m.created, m.updated) <= ?")
 		whereValues = append(whereValues, until)
 	}
 	query := fmt.Sprintf(

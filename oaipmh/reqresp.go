@@ -28,13 +28,13 @@ import (
 type OAIPMHRequest struct {
 	URL string `xml:",chardata"`
 
-	Verb            Verb   `xml:"verb,attr,omitempty"`
-	Identifier      string `xml:"identifier,attr,omitempty"`
-	MetadataPrefix  string `xml:"metadataPrefix,attr,omitempty"`
-	From            string `xml:"from,attr,omitempty"`
-	Until           string `xml:"until,attr,omitempty"`
-	Set             string `xml:"set,attr,omitempty"`
-	ResumptionToken string `xml:"resumptionToken,attr,omitempty"`
+	Verb            Verb       `xml:"verb,attr,omitempty"`
+	Identifier      string     `xml:"identifier,attr,omitempty"`
+	MetadataPrefix  string     `xml:"metadataPrefix,attr,omitempty"`
+	From            *time.Time `xml:"from,attr,omitempty"`
+	Until           *time.Time `xml:"until,attr,omitempty"`
+	Set             string     `xml:"set,attr,omitempty"`
+	ResumptionToken string     `xml:"resumptionToken,attr,omitempty"`
 }
 
 type OAIPMHResponse struct {
@@ -76,7 +76,7 @@ func NewOAIPMHResponse(request *OAIPMHRequest) *OAIPMHResponse {
 		XMLNS:             "http://www.openarchives.org/OAI/2.0/",
 		XMLNSXSI:          "http://www.w3.org/2001/XMLSchema-instance",
 		XSISchemaLocation: "http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd",
-		ResponseDate:      time.Now(),
+		ResponseDate:      time.Now().Round(time.Second).In(time.UTC),
 		Request:           request,
 		ProtocolVersion:   "2.0",
 	}

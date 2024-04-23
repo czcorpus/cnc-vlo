@@ -16,6 +16,8 @@
 
 package oaipmh
 
+import "time"
+
 // wrapper to be able to embed custom element with name defined by XMLName
 type ElementWrapper struct {
 	Value any
@@ -24,26 +26,24 @@ type ElementWrapper struct {
 // note - omitempties are optional
 
 type OAIPMHRecordHeader struct {
-	Status     string   `xml:"status,attr,omitempty"` // only `deleted` status
-	Identifier string   `xml:"identifier"`            // URL
-	Datestamp  string   `xml:"datestamp"`             // creation, modification or deletion of the record for the purpose of selective harvesting
-	SetSpec    []string `xml:"setSpec,omitempty"`
+	Status     string    `xml:"status,attr,omitempty"` // only `deleted` status
+	Identifier string    `xml:"identifier"`            // URL
+	Datestamp  time.Time `xml:"datestamp"`             // creation, modification or deletion of the record for the purpose of selective harvesting
+	SetSpec    []string  `xml:"setSpec,omitempty"`
 }
 
 // ----------------------- Identify ---------------------------
 
 type OAIPMHIdentify struct {
 	RepositoryName    string           `xml:"repositoryName"`
+	BaseURL           string           `xml:"baseURL"`         // filled automatically by handler
+	ProtocolVersion   string           `xml:"protocolVersion"` // filled automatically by handler
 	AdminEmail        []string         `xml:"adminEmail"`
-	EarliestDatestamp string           `xml:"earliestDatestamp"`
+	EarliestDatestamp time.Time        `xml:"earliestDatestamp"`
 	DeletedRecord     string           `xml:"deletedRecord"` // are we tracking deleted records no/transient/persistent?
 	Granularity       string           `xml:"granularity"`   // all repositories must support YYYY-MM-DD, extra YYYY-MM-DDThh:mm:ssZ
 	Compression       string           `xml:"compression,omitempty"`
 	Description       []ElementWrapper `xml:"description,omitempty"`
-
-	// filled automatically by handler
-	BaseURL         string `xml:"baseURL"`
-	ProtocolVersion string `xml:"protocolVersion"`
 }
 
 // --------------------- ListMetadataFormats ------------------
