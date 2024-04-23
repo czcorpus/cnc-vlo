@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
+	"time"
 
 	"github.com/czcorpus/cnc-gokit/collections"
 	"github.com/gin-gonic/gin"
@@ -61,11 +63,11 @@ type VLOHandler struct {
 }
 
 func (a *VLOHandler) getReqResp(argSource url.Values) (*OAIPMHRequest, *OAIPMHResponse, error) {
-	url, err := url.JoinPath(a.basePath, "oai")
+	OAIURL, err := url.JoinPath(a.basePath, "oai")
 	if err != nil {
 		return nil, nil, err
 	}
-	req := &OAIPMHRequest{URL: url}
+	req := &OAIPMHRequest{URL: OAIURL}
 	resp := NewOAIPMHResponse(req)
 
 	// get verb operation
@@ -94,8 +96,33 @@ func (a *VLOHandler) getReqResp(argSource url.Values) (*OAIPMHRequest, *OAIPMHRe
 
 	req.Identifier = getTypedArg[string](argSource, ArgIdentifier)
 	req.MetadataPrefix = getTypedArg[string](argSource, ArgMetadataPrefix)
-	req.From = getTypedArg[string](argSource, ArgFrom)
-	req.Until = getTypedArg[string](argSource, ArgUntil)
+	if from := getTypedArg[string](argSource, ArgFrom); from != "" {
+		var parsed time.Time
+		if strings.Contains(from, "T") {
+			parsed, err = time.Parse(time.RFC3339, from)
+		} else {
+			parsed, err = time.Parse(time.DateOnly, from)
+		}
+		if err != nil {
+			return nil, nil, err
+		}
+		parsed = parsed.In(time.UTC)
+		req.From = &parsed
+	}
+	if until := getTypedArg[string](argSource, ArgUntil); until != "" {
+		var parsed time.Time
+		if strings.Contains(until, "T") {
+			parsed, err = time.Parse(time.RFC3339, until)
+		} else {
+			parsed, err = time.Parse(time.DateOnly, until)
+			parsed = parsed.Add(24 * time.Hour)
+		}
+		if err != nil {
+			return nil, nil, err
+		}
+		parsed = parsed.In(time.UTC)
+		req.Until = &parsed
+	}
 	req.Set = getTypedArg[string](argSource, ArgSet)
 	req.ResumptionToken = getTypedArg[string](argSource, ArgResumptionToken)
 	return req, resp, nil

@@ -19,6 +19,7 @@ package cnchook
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/czcorpus/cnc-vlo/cncdb"
 	"github.com/czcorpus/cnc-vlo/cnchook/profiles"
@@ -40,7 +41,7 @@ func (c *CNCHook) Identify() oaipmh.ResultWrapper[oaipmh.OAIPMHIdentify] {
 			RepositoryName:    c.conf.RepositoryInfo.Name,
 			BaseURL:           c.conf.RepositoryInfo.BaseURL,
 			AdminEmail:        c.conf.RepositoryInfo.AdminEmail,
-			EarliestDatestamp: earliestDatestamp,
+			EarliestDatestamp: earliestDatestamp.In(time.UTC),
 			DeletedRecord:     "no",
 			Granularity:       "YYYY-MM-DDThh:mm:ssZ",
 		},

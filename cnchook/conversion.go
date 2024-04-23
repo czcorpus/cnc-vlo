@@ -19,6 +19,7 @@ package cnchook
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/czcorpus/cnc-vlo/cncdb"
 	"github.com/czcorpus/cnc-vlo/cnchook/profiles"
@@ -44,7 +45,7 @@ func (c *CNCHook) dcRecordFromData(data *cncdb.DBData) oaipmh.OAIPMHRecord {
 	recordID := fmt.Sprint(data.ID)
 	metadata := formats.NewDublinCore()
 	metadata.Title.Add(data.Title, "en")
-	metadata.Date.Add(data.Date, "")
+	metadata.Date.Add(data.Date.In(time.UTC).Format(time.RFC3339), "")
 	for _, author := range getAuthorList(data) {
 		if author.FirstName == "" {
 			metadata.Creator.Add(author.LastName, "")
@@ -67,7 +68,7 @@ func (c *CNCHook) dcRecordFromData(data *cncdb.DBData) oaipmh.OAIPMHRecord {
 	}
 
 	record := oaipmh.NewOAIPMHRecord(metadata)
-	record.Header.Datestamp = data.Date
+	record.Header.Datestamp = data.Date.In(time.UTC)
 	record.Header.Identifier = recordID
 	return record
 }
@@ -128,7 +129,7 @@ func (c *CNCHook) cmdiLindatClarinRecordFromData(data *cncdb.DBData) oaipmh.OAIP
 		{ID: "TODO", ResourceType: formats.CMDIResourceType{MimeType: "TODO", Value: "TODO"}, ResourceRef: "TODO"},
 	}
 	record := oaipmh.NewOAIPMHRecord(metadata)
-	record.Header.Datestamp = data.Date
+	record.Header.Datestamp = data.Date.In(time.UTC)
 	record.Header.Identifier = recordID
 	return record
 }

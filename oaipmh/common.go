@@ -36,7 +36,7 @@ func writeXMLResponse(w http.ResponseWriter, code int, value any) {
 		return
 	}
 	w.WriteHeader(code)
-	_, err = w.Write([]byte(xml.Header + "\n" + string(xmlAns)))
+	_, err = w.Write([]byte(xml.Header + string(xmlAns)))
 	if err != nil {
 		log.Err(err).Msg("failed to write XML to response")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
