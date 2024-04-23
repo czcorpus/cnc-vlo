@@ -208,10 +208,14 @@ func (a *VLOHandler) handleRequest(ctx *gin.Context, req *OAIPMHRequest, resp *O
 
 	default:
 		resp.Errors.Add(ErrorCodeBadArgument, fmt.Sprintf("Verb not implemented `%s`", req.Verb))
-		writeXMLResponse(ctx.Writer, http.StatusNotImplemented, resp)
+		httpCode = http.StatusNotImplemented
+	}
+
+	resp.Errors = append(resp.Errors, errors...)
+	if httpCode >= 400 && !resp.Errors.HasErrors() {
+		ctx.AbortWithStatus(httpCode)
 		return
 	}
-	resp.Errors = append(resp.Errors, errors...)
 	writeXMLResponse(ctx.Writer, httpCode, resp)
 }
 
