@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/go-sql-driver/mysql"
+	"golang.org/x/text/language"
 )
 
 // DBOverrides handles differences between KonText default
@@ -62,7 +63,7 @@ type ContactPersonData struct {
 
 type CorpusData struct {
 	Size   sql.NullInt32
-	Locale sql.NullString
+	Locale *language.Tag
 }
 
 func (c *CNCMySQLHandler) GetFirstDate() (time.Time, error) {
@@ -87,6 +88,7 @@ func (c *CNCMySQLHandler) IdentifierExists(identifier string) (bool, error) {
 
 func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 	var data DBData
+	var locale sql.NullString
 	row := c.conn.QueryRow(
 		fmt.Sprintf(
 			"SELECT m.id, GREATEST(m.created, m.updated), m.type, m.title, m.license_info, m.authors, "+
@@ -109,13 +111,20 @@ func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 		&data.ID, &data.Date, &data.Type, &data.Title, &data.License, &data.Authors,
 		&data.ContactPerson.Firstname, &data.ContactPerson.Lastname, &data.ContactPerson.Email, &data.ContactPerson.Affiliation,
 		&data.Name, &data.Description, &data.Link,
-		&data.CorpusData.Size, &data.CorpusData.Locale,
+		&data.CorpusData.Size, &locale,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
 		return nil, err
+	}
+	if locale.String != "" {
+		tag, err := language.Parse(locale.String)
+		if err != nil {
+			return nil, err
+		}
+		data.CorpusData.Locale = &tag
 	}
 	return &data, nil
 }
@@ -156,14 +165,22 @@ func (c *CNCMySQLHandler) ListRecordInfo(from *time.Time, until *time.Time) ([]D
 	results := make([]DBData, 0, 10)
 	for rows.Next() {
 		var row DBData
+		var locale sql.NullString
 		err := rows.Scan(
 			&row.ID, &row.Date, &row.Type, &row.Title, &row.License, &row.Authors,
 			&row.ContactPerson.Firstname, &row.ContactPerson.Lastname, &row.ContactPerson.Email, &row.ContactPerson.Affiliation,
 			&row.Name, &row.Description, &row.Link,
-			&row.CorpusData.Size, &row.CorpusData.Locale,
+			&row.CorpusData.Size, &locale,
 		)
 		if err != nil {
 			return nil, err
+		}
+		if locale.String != "" {
+			tag, err := language.Parse(locale.String)
+			if err != nil {
+				return nil, err
+			}
+			row.CorpusData.Locale = &tag
 		}
 		results = append(results, row)
 	}

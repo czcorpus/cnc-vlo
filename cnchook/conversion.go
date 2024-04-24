@@ -26,6 +26,7 @@ import (
 	"github.com/czcorpus/cnc-vlo/cnchook/profiles/components"
 	"github.com/czcorpus/cnc-vlo/oaipmh"
 	"github.com/czcorpus/cnc-vlo/oaipmh/formats"
+	"golang.org/x/text/language/display"
 )
 
 func getAuthorList(data *cncdb.DBData) []components.AuthorComponent {
@@ -60,8 +61,9 @@ func (c *CNCHook) dcRecordFromData(data *cncdb.DBData) oaipmh.OAIPMHRecord {
 
 	switch MetadataType(data.Type) {
 	case CorpusMetadataType:
-		if data.CorpusData.Locale.String != "" {
-			metadata.Language.Add(strings.Split(data.CorpusData.Locale.String, "_")[0], "")
+		if data.CorpusData.Locale != nil {
+			base, _ := data.CorpusData.Locale.Base()
+			metadata.Language.Add(base.String(), "")
 		}
 	case ServiceMetadataType:
 	default:
@@ -113,9 +115,10 @@ func (c *CNCHook) cmdiLindatClarinRecordFromData(data *cncdb.DBData) oaipmh.OAIP
 		profile.DataInfoInfo.SizeInfo = &[]components.SizeComponent{
 			{Size: fmt.Sprint(data.CorpusData.Size.Int32), Unit: "words"},
 		}
-		if data.CorpusData.Locale.String != "" {
+		if data.CorpusData.Locale != nil {
+			base, _ := data.CorpusData.Locale.Base()
 			profile.DataInfoInfo.Languages = &[]components.LanguageComponent{
-				{Name: "TODO language name", Code: strings.Split(data.CorpusData.Locale.String, "_")[0]},
+				{Name: display.English.Languages().Name(base), Code: base.String()},
 			}
 		}
 	case ServiceMetadataType:

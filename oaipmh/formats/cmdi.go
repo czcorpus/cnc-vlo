@@ -64,9 +64,29 @@ type CMDIResourceProxy struct {
 	ResourceRef  string           `xml:"cmd:ResourceRef"`
 }
 
+type ResourceType string
+
+const (
+	// A resource that is described in the present CMD instance, e.g., a text document, media file or tool.
+	RTResource ResourceType = "Resource"
+
+	// A metadata resource, i.e., another CMD instance, that is subordinate to the present CMD instance.
+	// The media type of this metadata resource SHOULD be application/x-cmdi+xml.
+	RTMetadata ResourceType = "Metadata"
+
+	// A resources that is a web page that provides the original context of the described resource, e.g., a “deep link” into a repository system.
+	RTLandingPage ResourceType = "LandingPage"
+
+	// A resource that is a web service that allows the described resource to be queried by means of dedicated software.
+	RTSearchService ResourceType = "SearchService"
+
+	// Resource that is a web page that allows the described resource to be queried by an end-user.
+	RTSearchPage ResourceType = "SearchPage"
+)
+
 type CMDIResourceType struct {
-	MimeType string `xml:"mimetype,attr"`
-	Value    string `xml:",chardata"`
+	MimeType string       `xml:"mimetype,attr,omitempty"`
+	Value    ResourceType `xml:",chardata"`
 }
 
 type CMDIResourceRelation struct {
@@ -75,7 +95,7 @@ type CMDIResourceRelation struct {
 }
 
 type CMDIRelationType struct {
-	ConceptLink string `xml:"cmd:ConceptLink,attr"`
+	ConceptLink string `xml:"cmd:ConceptLink,attr,omitempty"`
 	Value       string `xml:",chardata"`
 }
 
