@@ -105,11 +105,6 @@ func (c *CNCHook) cmdiLindatClarinRecordFromData(data *cncdb.DBData) oaipmh.OAIP
 		},
 	}
 
-	if data.Link.String != "" {
-		profile.DataInfoInfo.Links = &[]formats.TypedElement{
-			{Value: data.Link.String},
-		}
-	}
 	switch MetadataType(data.Type) {
 	case CorpusMetadataType:
 		profile.DataInfoInfo.SizeInfo = &[]components.SizeComponent{
@@ -127,10 +122,18 @@ func (c *CNCHook) cmdiLindatClarinRecordFromData(data *cncdb.DBData) oaipmh.OAIP
 
 	metadata := formats.NewCMDI(profile)
 	metadata.Header.MdSelfLink = fmt.Sprintf("%s/record/%s?format=cmdi", c.conf.RepositoryInfo.BaseURL, recordID)
-	// TODO Clarin requires at least one resource proxy for record to be harvested
-	metadata.Resources.ResourceProxyList = []formats.CMDIResourceProxy{
-		{ID: "TODO", ResourceType: formats.CMDIResourceType{MimeType: "TODO", Value: "TODO"}, ResourceRef: "TODO"},
+
+	if data.Link.String != "" {
+		profile.DataInfoInfo.Links = &[]formats.TypedElement{
+			{Value: data.Link.String},
+		}
+		// IMPORTANT Clarin requires at least one resource proxy for record to be harvested
+		// data.Link must not be empty
+		metadata.Resources.ResourceProxyList = []formats.CMDIResourceProxy{
+			{ID: fmt.Sprintf("uri_%d", data.ID), ResourceType: formats.CMDIResourceType{MimeType: "text/html", Value: formats.RTResource}, ResourceRef: data.Link.String},
+		}
 	}
+
 	record := oaipmh.NewOAIPMHRecord(metadata)
 	record.Header.Datestamp = data.Date.In(time.UTC)
 	record.Header.Identifier = recordID
