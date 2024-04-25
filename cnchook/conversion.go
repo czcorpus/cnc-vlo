@@ -116,6 +116,10 @@ func (c *CNCHook) cmdiLindatClarinRecordFromData(data *cncdb.DBData) oaipmh.OAIP
 				{Name: display.English.Languages().Name(base), Code: base.String()},
 			}
 		}
+		if data.CorpusData.Keywords.String != "" {
+			keywords := strings.Split(data.CorpusData.Keywords.String, ",")
+			profile.DataInfoInfo.Keywords = &keywords
+		}
 	case ServiceMetadataType:
 	default:
 	}

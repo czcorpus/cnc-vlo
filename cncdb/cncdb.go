@@ -62,8 +62,9 @@ type ContactPersonData struct {
 }
 
 type CorpusData struct {
-	Size   sql.NullInt32
-	Locale *language.Tag
+	Size     sql.NullInt32
+	Locale   *language.Tag
+	Keywords sql.NullString
 }
 
 func (c *CNCMySQLHandler) GetFirstDate() (time.Time, error) {
@@ -96,13 +97,16 @@ func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 				"COALESCE(c.name, ms.name), "+
 				"COALESCE(c.description_en, ms.description), "+
 				"COALESCE(c.web, ms.link), "+
-				"c.size, c.locale "+
+				"c.size, c.locale, GROUP_CONCAT(k.label_en ORDER BY k.display_order SEPARATOR ',') "+
 				"FROM vlo_metadata_common AS m "+
 				"LEFT JOIN vlo_metadata_corpus AS mc ON m.corpus_metadata_id = mc.id "+
 				"LEFT JOIN vlo_metadata_service AS ms ON m.service_metadata_id = ms.id "+
 				"LEFT JOIN %s AS c ON mc.corpus_name = c.name "+
+				"LEFT JOIN kontext_keyword_corpus AS kc ON kc.corpus_name = c.name "+
+				"LEFT JOIN kontext_keyword AS k ON kc.keyword_id = k.id "+
 				"JOIN %s AS u ON m.contact_user_id = u.id "+
-				"WHERE m.id = ? AND m.deleted = FALSE",
+				"WHERE m.id = ? AND m.deleted = FALSE "+
+				"GROUP BY kc.corpus_name ",
 			c.overrides.UserTableFirstNameCol, c.overrides.UserTableLastNameCol,
 			c.overrides.CorporaTableName, c.overrides.UserTableName,
 		), identifier,
@@ -111,7 +115,7 @@ func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 		&data.ID, &data.Date, &data.Type, &data.Title, &data.License, &data.Authors,
 		&data.ContactPerson.Firstname, &data.ContactPerson.Lastname, &data.ContactPerson.Email, &data.ContactPerson.Affiliation,
 		&data.Name, &data.Description, &data.Link,
-		&data.CorpusData.Size, &locale,
+		&data.CorpusData.Size, &locale, &data.CorpusData.Keywords,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -146,18 +150,21 @@ func (c *CNCMySQLHandler) ListRecordInfo(from *time.Time, until *time.Time) ([]D
 			"COALESCE(c.name, ms.name), "+
 			"COALESCE(c.description_en, ms.description), "+
 			"COALESCE(c.web, ms.link), "+
-			"c.size, c.locale "+
+			"c.size, c.locale, GROUP_CONCAT(k.label_en ORDER BY k.display_order SEPARATOR ',') "+
 			"FROM vlo_metadata_common AS m "+
 			"LEFT JOIN vlo_metadata_corpus AS mc ON m.corpus_metadata_id = mc.id "+
 			"LEFT JOIN vlo_metadata_service AS ms ON m.service_metadata_id = ms.id "+
 			"LEFT JOIN %s AS c ON mc.corpus_name = c.name "+
-			"JOIN %s AS u ON m.contact_user_id = u.id",
+			"LEFT JOIN kontext_keyword_corpus AS kc ON kc.corpus_name = c.name "+
+			"LEFT JOIN kontext_keyword AS k ON kc.keyword_id = k.id "+
+			"JOIN %s AS u ON m.contact_user_id = u.id ",
 		c.overrides.UserTableFirstNameCol, c.overrides.UserTableLastNameCol,
 		c.overrides.CorporaTableName, c.overrides.UserTableName,
 	)
 	if len(whereClause) > 0 {
 		query += " WHERE " + strings.Join(whereClause, " AND ")
 	}
+	query += " GROUP BY kc.corpus_name "
 	rows, err := c.conn.Query(query, whereValues...)
 	if err != nil {
 		return nil, err
@@ -170,7 +177,7 @@ func (c *CNCMySQLHandler) ListRecordInfo(from *time.Time, until *time.Time) ([]D
 			&row.ID, &row.Date, &row.Type, &row.Title, &row.License, &row.Authors,
 			&row.ContactPerson.Firstname, &row.ContactPerson.Lastname, &row.ContactPerson.Email, &row.ContactPerson.Affiliation,
 			&row.Name, &row.Description, &row.Link,
-			&row.CorpusData.Size, &locale,
+			&row.CorpusData.Size, &locale, &row.CorpusData.Keywords,
 		)
 		if err != nil {
 			return nil, err
