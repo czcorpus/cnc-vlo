@@ -57,7 +57,7 @@ func (c *CNCHook) ListMetadataFormats(req oaipmh.OAIPMHRequest) oaipmh.ResultWra
 	ans := oaipmh.NewResultWrapper(
 		[]oaipmh.OAIPMHMetadataFormat{
 			formats.GetDublinCoreFormat(),
-			formats.GetCMDIFormat(&profiles.LindatClarinProfile{}),
+			formats.GetCMDIFormat(&profiles.CNCResourceProfile{}),
 		},
 	)
 	if req.Identifier != "" {

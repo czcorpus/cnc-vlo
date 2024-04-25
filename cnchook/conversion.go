@@ -64,7 +64,7 @@ func (c *CNCHook) dcRecordFromData(data *cncdb.DBData) oaipmh.OAIPMHRecord {
 
 func (c *CNCHook) cmdiLindatClarinRecordFromData(data *cncdb.DBData) oaipmh.OAIPMHRecord {
 	recordID := fmt.Sprint(data.ID)
-	profile := &profiles.LindatClarinProfile{
+	profile := &profiles.CNCResourceProfile{
 		BibliographicInfo: components.BibliographicInfoComponent{
 			Titles: []formats.MultilangElement{
 				{Lang: "en", Value: data.Title},
