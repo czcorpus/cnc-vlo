@@ -112,7 +112,7 @@ func (c *CNCHook) cmdiLindatClarinRecordFromData(data *cncdb.DBData) oaipmh.OAIP
 		metadata.Resources.ResourceProxyList = append(
 			metadata.Resources.ResourceProxyList,
 			formats.CMDIResourceProxy{
-				ID:           fmt.Sprintf("sp_%d", data.ID),
+				ID:           fmt.Sprintf("sp_%s", recordID),
 				ResourceType: formats.CMDIResourceType{MimeType: "text/html", Value: formats.RTSearchPage},
 				ResourceRef:  getKontextPath(data.Name),
 			},
@@ -127,7 +127,7 @@ func (c *CNCHook) cmdiLindatClarinRecordFromData(data *cncdb.DBData) oaipmh.OAIP
 		metadata.Resources.ResourceProxyList = append(
 			metadata.Resources.ResourceProxyList,
 			formats.CMDIResourceProxy{
-				ID:           fmt.Sprintf("uri_%d", data.ID),
+				ID:           fmt.Sprintf("uri_%s", recordID),
 				ResourceType: formats.CMDIResourceType{MimeType: "text/html", Value: formats.RTResource},
 				ResourceRef:  data.Link.String,
 			},

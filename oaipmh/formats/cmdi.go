@@ -19,6 +19,7 @@ package formats
 import (
 	"encoding/xml"
 	"strings"
+	"time"
 
 	"github.com/czcorpus/cnc-vlo/oaipmh"
 )
@@ -43,11 +44,11 @@ type CMDIFormat struct {
 
 // --------------------- Header ---------------------
 type CMDIHeader struct {
-	MdCreator               []string `xml:"cmd:MdCreator,omitempty"`
-	MdCreationDate          string   `xml:"cmd:MdCreationDate,omitempty"`
-	MdSelfLink              string   `xml:"cmd:MdSelfLink,omitempty"`
-	MdProfile               string   `xml:"cmd:MdProfile"`
-	MdCollectionDisplayName string   `xml:"cmd:MdCollectionDisplayName,omitempty"`
+	MdCreator               []string   `xml:"cmd:MdCreator,omitempty"`
+	MdCreationDate          *time.Time `xml:"cmd:MdCreationDate,omitempty"`
+	MdSelfLink              string     `xml:"cmd:MdSelfLink,omitempty"`
+	MdProfile               string     `xml:"cmd:MdProfile"`
+	MdCollectionDisplayName string     `xml:"cmd:MdCollectionDisplayName,omitempty"`
 }
 
 // --------------------- Resources ------------------
