@@ -53,6 +53,7 @@ type CMDIHeader struct {
 // --------------------- Resources ------------------
 
 type CMDIResources struct {
+	// !!!IMPORTANT!!! Clarin requires at least one resource proxy for record to be harvested
 	ResourceProxyList    []CMDIResourceProxy    `xml:"cmd:ResourceProxyList>cmd:ResourceProxy,omitempty"`
 	JournalFileProxyList []string               `xml:"cmd:JournalFileProxyList>cmd:JournaFileProxy>cmd:ResourceRef,omitempty"`
 	ResourceRelationList []CMDIResourceRelation `xml:"cmd:ResourceRelationList>cmd:ResourceRelation,omitempty"`

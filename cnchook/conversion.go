@@ -29,19 +29,6 @@ import (
 	"golang.org/x/text/language/display"
 )
 
-func getAuthorList(data *cncdb.DBData) []components.AuthorComponent {
-	authors := []components.AuthorComponent{}
-	for _, author := range strings.Split(strings.ReplaceAll(data.Authors, "\r\n", "\n"), "\n") {
-		sAuthor := strings.Split(strings.Trim(author, " "), " ")
-		if len(sAuthor) == 1 {
-			authors = append(authors, components.AuthorComponent{LastName: sAuthor[0]})
-		} else if len(sAuthor) > 1 {
-			authors = append(authors, components.AuthorComponent{FirstName: sAuthor[0], LastName: sAuthor[1]})
-		}
-	}
-	return authors
-}
-
 func (c *CNCHook) dcRecordFromData(data *cncdb.DBData) oaipmh.OAIPMHRecord {
 	recordID := fmt.Sprint(data.ID)
 	metadata := formats.NewDublinCore()
@@ -104,6 +91,8 @@ func (c *CNCHook) cmdiLindatClarinRecordFromData(data *cncdb.DBData) oaipmh.OAIP
 			{URI: data.License},
 		},
 	}
+	metadata := formats.NewCMDI(profile)
+	metadata.Header.MdSelfLink = fmt.Sprintf("%s/record/%s?format=cmdi", c.conf.RepositoryInfo.BaseURL, recordID)
 
 	switch MetadataType(data.Type) {
 	case CorpusMetadataType:
@@ -120,22 +109,29 @@ func (c *CNCHook) cmdiLindatClarinRecordFromData(data *cncdb.DBData) oaipmh.OAIP
 			keywords := strings.Split(data.CorpusData.Keywords.String, ",")
 			profile.DataInfoInfo.Keywords = &keywords
 		}
+		metadata.Resources.ResourceProxyList = append(
+			metadata.Resources.ResourceProxyList,
+			formats.CMDIResourceProxy{
+				ID:           fmt.Sprintf("sp_%d", data.ID),
+				ResourceType: formats.CMDIResourceType{MimeType: "text/html", Value: formats.RTSearchPage},
+				ResourceRef:  getKontextPath(data.Name),
+			},
+		)
+
 	case ServiceMetadataType:
 	default:
 	}
 
-	metadata := formats.NewCMDI(profile)
-	metadata.Header.MdSelfLink = fmt.Sprintf("%s/record/%s?format=cmdi", c.conf.RepositoryInfo.BaseURL, recordID)
-
+	// insert link if available
 	if data.Link.String != "" {
-		profile.DataInfoInfo.Links = &[]formats.TypedElement{
-			{Value: data.Link.String},
-		}
-		// IMPORTANT Clarin requires at least one resource proxy for record to be harvested
-		// data.Link must not be empty
-		metadata.Resources.ResourceProxyList = []formats.CMDIResourceProxy{
-			{ID: fmt.Sprintf("uri_%d", data.ID), ResourceType: formats.CMDIResourceType{MimeType: "text/html", Value: formats.RTResource}, ResourceRef: data.Link.String},
-		}
+		metadata.Resources.ResourceProxyList = append(
+			metadata.Resources.ResourceProxyList,
+			formats.CMDIResourceProxy{
+				ID:           fmt.Sprintf("uri_%d", data.ID),
+				ResourceType: formats.CMDIResourceType{MimeType: "text/html", Value: formats.RTResource},
+				ResourceRef:  data.Link.String,
+			},
+		)
 	}
 
 	record := oaipmh.NewOAIPMHRecord(metadata)
