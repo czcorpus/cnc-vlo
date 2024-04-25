@@ -22,16 +22,17 @@ import (
 )
 
 // note - omitempties are optional
+// profile is derived from LINDAT_CLARIN profile
 
-type LindatClarinProfile struct {
-	BibliographicInfo components.BibliographicInfoComponent `xml:"cmdp:LINDAT_CLARIN>cmdp:bibliographicInfo"`
-	DataInfoInfo      components.DataInfoComponent          `xml:"cmdp:LINDAT_CLARIN>cmdp:dataInfo"`
-	LicenseInfo       []LicenseElement                      `xml:"cmdp:LINDAT_CLARIN>cmdp:licenseInfo>cmdp:license"`
-	RelationsInfo     *[]formats.TypedElement               `xml:"cmdp:LINDAT_CLARIN>cmdp:relationsInfo>cmdp:relation,omitempty"`
+type CNCResourceProfile struct {
+	BibliographicInfo components.BibliographicInfoComponent `xml:"cmdp:CNC_Resource>cmdp:bibliographicInfo"`
+	DataInfoInfo      components.DataInfoComponent          `xml:"cmdp:CNC_Resource>cmdp:dataInfo"`
+	LicenseInfo       []LicenseElement                      `xml:"cmdp:CNC_Resource>cmdp:licenseInfo>cmdp:license"`
+	RelationsInfo     *[]formats.TypedElement               `xml:"cmdp:CNC_Resource>cmdp:relationsInfo>cmdp:relation,omitempty"`
 }
 
-func (c *LindatClarinProfile) GetSchemaURL() string {
-	return "https://catalog.clarin.eu/ds/ComponentRegistry/rest/registry/1.x/profiles/clarin.eu:cr1:p_1403526079380/xsd"
+func (c *CNCResourceProfile) GetSchemaURL() string {
+	return "https://catalog.clarin.eu/ds/ComponentRegistry/rest/registry/1.x/profiles/clarin.eu:cr1:p_1712653174418/xsd"
 }
 
 type LicenseElement struct {
