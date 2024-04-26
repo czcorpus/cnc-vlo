@@ -1,4 +1,5 @@
 // Copyright 2024 Martin Zimandl <martin.zimandl@gmail.com>
+// Copyright 2024 Tomas Machalek <tomas.machalek@gmail.com>
 // Copyright 2024 Institute of the Czech National Corpus,
 //                Faculty of Arts, Charles University
 //
@@ -23,6 +24,7 @@ import (
 	"time"
 
 	"github.com/go-sql-driver/mysql"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/text/language"
 )
 
@@ -87,6 +89,29 @@ func (c *CNCMySQLHandler) IdentifierExists(identifier string) (bool, error) {
 	return true, nil
 }
 
+func (c *CNCMySQLHandler) parseLocale(loc string) (ans language.Tag, err error) {
+	tmp := strings.Split(loc, ".")
+	base := tmp[0]
+	ans, err = language.Parse(base)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("value", loc).
+			Msg("Failed to parse database language record. Trying partial parsing.")
+		tmp := strings.Split(loc, "_")
+		if len(tmp) == 0 {
+			tmp = strings.Split(loc, "-")
+		}
+		if len(tmp) != 2 {
+			err = fmt.Errorf("unable to parse locale %s", loc)
+			return
+		}
+		ans, err = language.Parse(tmp[0])
+		return
+	}
+	return
+}
+
 func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 	var data DBData
 	var locale sql.NullString
@@ -124,7 +149,7 @@ func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 		return nil, err
 	}
 	if locale.String != "" {
-		tag, err := language.Parse(locale.String)
+		tag, err := c.parseLocale(locale.String)
 		if err != nil {
 			return nil, err
 		}
