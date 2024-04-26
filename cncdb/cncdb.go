@@ -64,7 +64,7 @@ type ContactPersonData struct {
 }
 
 type CorpusData struct {
-	Size     sql.NullInt32
+	Size     sql.NullInt64
 	Locale   *language.Tag
 	Keywords sql.NullString
 }
