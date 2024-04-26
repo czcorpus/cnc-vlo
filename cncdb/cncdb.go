@@ -208,7 +208,7 @@ func (c *CNCMySQLHandler) ListRecordInfo(from *time.Time, until *time.Time) ([]D
 			return nil, err
 		}
 		if locale.String != "" {
-			tag, err := language.Parse(locale.String)
+			tag, err := c.parseLocale(locale.String)
 			if err != nil {
 				return nil, err
 			}
