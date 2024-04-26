@@ -97,7 +97,7 @@ func (c *CNCHook) cmdiLindatClarinRecordFromData(data *cncdb.DBData) oaipmh.OAIP
 	switch MetadataType(data.Type) {
 	case CorpusMetadataType:
 		profile.DataInfoInfo.SizeInfo = &[]components.SizeComponent{
-			{Size: fmt.Sprint(data.CorpusData.Size.Int32), Unit: "words"},
+			{Size: fmt.Sprint(data.CorpusData.Size.Int64), Unit: "words"},
 		}
 		if data.CorpusData.Locale != nil {
 			base, _ := data.CorpusData.Locale.Base()
