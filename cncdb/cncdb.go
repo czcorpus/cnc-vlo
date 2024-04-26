@@ -38,8 +38,9 @@ type DBOverrides struct {
 }
 
 type CNCMySQLHandler struct {
-	conn      *sql.DB
-	overrides DBOverrides
+	conn             *sql.DB
+	overrides        DBOverrides
+	publicCorplistID int
 }
 
 type DBData struct {
@@ -78,7 +79,18 @@ func (c *CNCMySQLHandler) GetFirstDate() (time.Time, error) {
 
 func (c *CNCMySQLHandler) IdentifierExists(identifier string) (bool, error) {
 	var id int
-	row := c.conn.QueryRow("SELECT id FROM vlo_metadata_common WHERE id = ? AND deleted = FALSE", identifier)
+	row := c.conn.QueryRow(
+		fmt.Sprintf(
+			"SELECT id FROM vlo_metadata_common AS m "+
+				"LEFT JOIN vlo_metadata_corpus AS mc ON m.corpus_metadata_id = mc.id "+
+				"LEFT JOIN %s AS c ON m.corpus_name = c.name "+
+				"LEFT JOIN corplist_corpus AS cc ON c.id = cc.corpus_id "+
+				"WHERE m.id = ? AND m.deleted = FALSE "+
+				"AND ((m.type = 'corpus' AND cc.corplist_id = ?) OR m.type != 'corpus')",
+			c.overrides.CorporaTableName,
+		),
+		identifier, c.publicCorplistID,
+	)
 	err := row.Scan(&id)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -129,12 +141,14 @@ func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 				"LEFT JOIN %s AS c ON mc.corpus_name = c.name "+
 				"LEFT JOIN kontext_keyword_corpus AS kc ON kc.corpus_name = c.name "+
 				"LEFT JOIN kontext_keyword AS k ON kc.keyword_id = k.id "+
+				"LEFT JOIN corplist_corpus AS cc ON c.id = cc.corpus_id "+
 				"JOIN %s AS u ON m.contact_user_id = u.id "+
 				"WHERE m.id = ? AND m.deleted = FALSE "+
+				"AND ((m.type = 'corpus' AND cc.corplist_id = ?) OR m.type != 'corpus') "+
 				"GROUP BY kc.corpus_name ",
 			c.overrides.UserTableFirstNameCol, c.overrides.UserTableLastNameCol,
 			c.overrides.CorporaTableName, c.overrides.UserTableName,
-		), identifier,
+		), identifier, c.publicCorplistID,
 	)
 	err := row.Scan(
 		&data.ID, &data.Date, &data.Type, &data.Title, &data.License, &data.Authors,
@@ -159,8 +173,14 @@ func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 }
 
 func (c *CNCMySQLHandler) ListRecordInfo(from *time.Time, until *time.Time) ([]DBData, error) {
-	whereClause := []string{"m.deleted = ?"}
-	whereValues := []any{"FALSE"}
+	whereClause := []string{
+		"m.deleted = ?",
+		"((m.type = 'corpus' AND cc.corplist_id = ?) OR m.type != 'corpus')",
+	}
+	whereValues := []any{
+		"FALSE",
+		c.publicCorplistID,
+	}
 	if from != nil {
 		whereClause = append(whereClause, "GREATEST(m.created, m.updated) >= ?")
 		whereValues = append(whereValues, from)
@@ -182,6 +202,7 @@ func (c *CNCMySQLHandler) ListRecordInfo(from *time.Time, until *time.Time) ([]D
 			"LEFT JOIN %s AS c ON mc.corpus_name = c.name "+
 			"LEFT JOIN kontext_keyword_corpus AS kc ON kc.corpus_name = c.name "+
 			"LEFT JOIN kontext_keyword AS k ON kc.keyword_id = k.id "+
+			"LEFT JOIN corplist_corpus AS cc ON c.id = cc.corpus_id "+
 			"JOIN %s AS u ON m.contact_user_id = u.id ",
 		c.overrides.UserTableFirstNameCol, c.overrides.UserTableLastNameCol,
 		c.overrides.CorporaTableName, c.overrides.UserTableName,
@@ -233,7 +254,8 @@ func NewCNCMySQLHandler(cnf DatabaseSetup) (*CNCMySQLHandler, error) {
 		return nil, fmt.Errorf("failed to open CNC DB: %w", err)
 	}
 	return &CNCMySQLHandler{
-		conn:      db,
-		overrides: cnf.Overrides,
+		conn:             db,
+		overrides:        cnf.Overrides,
+		publicCorplistID: cnf.PublicCorplistID,
 	}, nil
 }

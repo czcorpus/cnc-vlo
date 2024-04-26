@@ -17,9 +17,10 @@
 package cncdb
 
 type DatabaseSetup struct {
-	Host      string      `json:"host"`
-	User      string      `json:"user"`
-	Passwd    string      `json:"passwd"`
-	Name      string      `json:"db"`
-	Overrides DBOverrides `json:"overrides"`
+	Host             string      `json:"host"`
+	User             string      `json:"user"`
+	Passwd           string      `json:"passwd"`
+	Name             string      `json:"db"`
+	Overrides        DBOverrides `json:"overrides"`
+	PublicCorplistID int         `json:"publicCorplistId"`
 }
