@@ -47,7 +47,7 @@ func (c *CNCHook) Identify() oaipmh.ResultWrapper[oaipmh.OAIPMHIdentify] {
 		},
 	)
 	if err != nil {
-		log.Error().Err(err).Send()
+		log.Error().Err(err).Msg("Failed to call Identify")
 		result.HTTPCode = http.StatusInternalServerError
 	}
 	return result
@@ -63,7 +63,7 @@ func (c *CNCHook) ListMetadataFormats(req oaipmh.OAIPMHRequest) oaipmh.ResultWra
 	if req.Identifier != "" {
 		exists, err := c.db.IdentifierExists(req.Identifier)
 		if err != nil {
-			log.Error().Err(err).Send()
+			log.Error().Err(err).Msg("Failed to call ListMetadataFormats")
 			ans.HTTPCode = http.StatusInternalServerError
 			return ans
 
@@ -80,7 +80,7 @@ func (c *CNCHook) GetRecord(req oaipmh.OAIPMHRequest) oaipmh.ResultWrapper[oaipm
 	ans := oaipmh.NewResultWrapper(oaipmh.OAIPMHRecord{})
 	data, err := c.db.GetRecordInfo(req.Identifier)
 	if err != nil {
-		log.Error().Err(err).Send()
+		log.Error().Err(err).Msg("Failed to call GetRecord")
 		ans.HTTPCode = http.StatusInternalServerError
 		return ans
 
@@ -107,7 +107,7 @@ func (c *CNCHook) ListIdentifiers(req oaipmh.OAIPMHRequest) oaipmh.ResultWrapper
 	ans := oaipmh.NewResultWrapper([]oaipmh.OAIPMHRecordHeader{})
 	data, err := c.db.ListRecordInfo(req.From, req.Until)
 	if err != nil {
-		log.Error().Err(err).Send()
+		log.Error().Err(err).Msg("Failed to call ListIdentifiers")
 		ans.HTTPCode = http.StatusInternalServerError
 		return ans
 	}
@@ -135,7 +135,7 @@ func (c *CNCHook) ListRecords(req oaipmh.OAIPMHRequest) oaipmh.ResultWrapper[[]o
 	ans := oaipmh.NewResultWrapper([]oaipmh.OAIPMHRecord{})
 	data, err := c.db.ListRecordInfo(req.From, req.Until)
 	if err != nil {
-		log.Error().Err(err).Send()
+		log.Error().Err(err).Msg("Failed to call ListRecords")
 		ans.HTTPCode = http.StatusInternalServerError
 		return ans
 	}

@@ -65,7 +65,7 @@ type VLOHandler struct {
 func (a *VLOHandler) getReqResp(argSource url.Values) (*OAIPMHRequest, *OAIPMHResponse, error) {
 	OAIURL, err := url.JoinPath(a.basePath, "oai")
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("failed to prepare OAIPMH request and response: %w", err)
 	}
 	req := &OAIPMHRequest{URL: OAIURL}
 	resp := NewOAIPMHResponse(req)
@@ -104,7 +104,7 @@ func (a *VLOHandler) getReqResp(argSource url.Values) (*OAIPMHRequest, *OAIPMHRe
 			parsed, err = time.Parse(time.DateOnly, from)
 		}
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, fmt.Errorf("failed to parse `from`: %w", err)
 		}
 		parsed = parsed.In(time.UTC)
 		req.From = &parsed
@@ -118,7 +118,7 @@ func (a *VLOHandler) getReqResp(argSource url.Values) (*OAIPMHRequest, *OAIPMHRe
 			parsed = parsed.Add(24 * time.Hour)
 		}
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, fmt.Errorf("failed to until `from`: %w", err)
 		}
 		parsed = parsed.In(time.UTC)
 		req.Until = &parsed
@@ -222,7 +222,7 @@ func (a *VLOHandler) handleRequest(ctx *gin.Context, req *OAIPMHRequest, resp *O
 func (a *VLOHandler) HandleOAIGet(ctx *gin.Context) {
 	req, resp, err := a.getReqResp(ctx.Request.URL.Query())
 	if err != nil {
-		log.Error().Err(err).Send()
+		log.Error().Err(err).Msg("Failed to handle OAIPMH Get request")
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
@@ -235,13 +235,13 @@ func (a *VLOHandler) HandleOAIGet(ctx *gin.Context) {
 
 func (a *VLOHandler) HandleOAIPost(ctx *gin.Context) {
 	if err := ctx.Request.ParseForm(); err != nil {
-		log.Error().Err(err).Send()
+		log.Error().Err(err).Msg("Failed to handle OAIPMH Post request")
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 	req, resp, err := a.getReqResp(ctx.Request.PostForm)
 	if err != nil {
-		log.Error().Err(err).Send()
+		log.Error().Err(err).Msg("Failed to handle OAIPMH Post request")
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}

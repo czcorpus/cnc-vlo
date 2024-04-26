@@ -84,7 +84,7 @@ func (c *CNCMySQLHandler) IdentifierExists(identifier string) (bool, error) {
 		if err == sql.ErrNoRows {
 			return false, nil
 		}
-		return false, err
+		return false, fmt.Errorf("failed to check identifier existence record info: %w", err)
 	}
 	return true, nil
 }
@@ -146,12 +146,12 @@ func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
-		return nil, err
+		return nil, fmt.Errorf("failed to get record info: %w", err)
 	}
 	if locale.String != "" {
 		tag, err := c.parseLocale(locale.String)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to get record info: %w", err)
 		}
 		data.CorpusData.Locale = &tag
 	}
@@ -192,7 +192,7 @@ func (c *CNCMySQLHandler) ListRecordInfo(from *time.Time, until *time.Time) ([]D
 	query += " GROUP BY kc.corpus_name "
 	rows, err := c.conn.Query(query, whereValues...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to list record info: %w", err)
 	}
 	results := make([]DBData, 0, 10)
 	for rows.Next() {
@@ -205,12 +205,12 @@ func (c *CNCMySQLHandler) ListRecordInfo(from *time.Time, until *time.Time) ([]D
 			&row.CorpusData.Size, &locale, &row.CorpusData.Keywords,
 		)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to list record info: %w", err)
 		}
 		if locale.String != "" {
 			tag, err := c.parseLocale(locale.String)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("failed to list record info: %w", err)
 			}
 			row.CorpusData.Locale = &tag
 		}
@@ -230,7 +230,7 @@ func NewCNCMySQLHandler(cnf DatabaseSetup) (*CNCMySQLHandler, error) {
 	conf.Loc = time.Local
 	db, err := sql.Open("mysql", conf.FormatDSN())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to open CNC DB: %w", err)
 	}
 	return &CNCMySQLHandler{
 		conn:      db,
