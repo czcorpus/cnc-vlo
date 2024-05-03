@@ -110,6 +110,7 @@ type CMDIResource struct {
 
 type CMDIProfile interface {
 	GetSchemaURL() string
+	GetSchemaLocation() []string
 }
 
 func NewCMDI(profile CMDIProfile) CMDIFormat {
@@ -117,11 +118,16 @@ func NewCMDI(profile CMDIProfile) CMDIFormat {
 		XMLNSXSI:  "http://www.w3.org/2001/XMLSchema-instance",
 		XMLNSCMD:  "http://www.clarin.eu/cmd/1",
 		XMLNSCMDP: profile.GetSchemaURL(),
-		XSISchemaLocation: strings.Join([]string{
-			"http://www.clarin.eu/cmd/1",
-			"http://www.clarin.eu/cmd/1/xsd/cmd-envelop.xsd",
-			profile.GetSchemaURL(),
-		}, " "),
+		XSISchemaLocation: strings.Join(
+			append(
+				[]string{
+					"http://www.clarin.eu/cmd/1",
+					"http://www.clarin.eu/cmd/1/xsd/cmd-envelop.xsd",
+				},
+				profile.GetSchemaLocation()...,
+			),
+			" ",
+		),
 		Version:    "1.2",
 		Header:     CMDIHeader{MdProfile: profile.GetSchemaURL()},
 		Components: profile,

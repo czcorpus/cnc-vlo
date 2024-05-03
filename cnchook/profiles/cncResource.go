@@ -17,12 +17,16 @@
 package profiles
 
 import (
+	"fmt"
+
 	"github.com/czcorpus/cnc-vlo/cnchook/profiles/components"
 	"github.com/czcorpus/cnc-vlo/oaipmh/formats"
 )
 
 // note - omitempties are optional
 // profile is derived from LINDAT_CLARIN profile
+
+const CNCResourceProfileID = "clarin.eu:cr1:p_1712653174418"
 
 type CNCResourceProfile struct {
 	BibliographicInfo components.BibliographicInfoComponent `xml:"cmdp:CNC_Resource>cmdp:bibliographicInfo"`
@@ -32,7 +36,14 @@ type CNCResourceProfile struct {
 }
 
 func (c *CNCResourceProfile) GetSchemaURL() string {
-	return "https://catalog.clarin.eu/ds/ComponentRegistry/rest/registry/1.x/profiles/clarin.eu:cr1:p_1712653174418/xsd"
+	return fmt.Sprintf("http://www.clarin.eu/cmd/1/profiles/%s", CNCResourceProfileID)
+}
+
+func (c *CNCResourceProfile) GetSchemaLocation() []string {
+	return []string{
+		c.GetSchemaURL(),
+		fmt.Sprintf("https://catalog.clarin.eu/ds/ComponentRegistry/rest/registry/1.x/profiles/%s/xsd", CNCResourceProfileID),
+	}
 }
 
 type LicenseElement struct {
