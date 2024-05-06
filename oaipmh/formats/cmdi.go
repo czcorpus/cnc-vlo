@@ -24,7 +24,11 @@ import (
 	"github.com/czcorpus/cnc-vlo/oaipmh"
 )
 
-const CMDIMetadataPrefix = "cmdi"
+const (
+	CMDIMetadataPrefix = "cmdi"
+	CMDINamespace      = "http://www.clarin.eu/cmd/1"
+	CMDIEnvelopeSchema = "http://www.clarin.eu/cmd/1/xsd/cmd-envelop.xsd"
+)
 
 // note - omitempties are optional
 
@@ -116,14 +120,11 @@ type CMDIProfile interface {
 func NewCMDI(profile CMDIProfile) CMDIFormat {
 	return CMDIFormat{
 		XMLNSXSI:  "http://www.w3.org/2001/XMLSchema-instance",
-		XMLNSCMD:  "http://www.clarin.eu/cmd/1",
+		XMLNSCMD:  CMDINamespace,
 		XMLNSCMDP: profile.GetSchemaURL(),
 		XSISchemaLocation: strings.Join(
 			append(
-				[]string{
-					"http://www.clarin.eu/cmd/1",
-					"http://www.clarin.eu/cmd/1/xsd/cmd-envelop.xsd",
-				},
+				[]string{CMDINamespace, CMDIEnvelopeSchema},
 				profile.GetSchemaLocation()...,
 			),
 			" ",
@@ -134,10 +135,10 @@ func NewCMDI(profile CMDIProfile) CMDIFormat {
 	}
 }
 
-func GetCMDIFormat(profile CMDIProfile) oaipmh.OAIPMHMetadataFormat {
+func GetCMDIFormat() oaipmh.OAIPMHMetadataFormat {
 	return oaipmh.OAIPMHMetadataFormat{
 		MetadataPrefix:    CMDIMetadataPrefix,
-		Schema:            profile.GetSchemaURL(),
-		MetadataNamespace: "http://www.clarin.eu/cmd/",
+		Schema:            CMDIEnvelopeSchema,
+		MetadataNamespace: CMDINamespace,
 	}
 }

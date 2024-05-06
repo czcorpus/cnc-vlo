@@ -22,7 +22,6 @@ import (
 	"time"
 
 	"github.com/czcorpus/cnc-vlo/cncdb"
-	"github.com/czcorpus/cnc-vlo/cnchook/profiles"
 	"github.com/czcorpus/cnc-vlo/cnf"
 	"github.com/czcorpus/cnc-vlo/oaipmh"
 	"github.com/czcorpus/cnc-vlo/oaipmh/formats"
@@ -57,7 +56,7 @@ func (c *CNCHook) ListMetadataFormats(req oaipmh.OAIPMHRequest) oaipmh.ResultWra
 	ans := oaipmh.NewResultWrapper(
 		[]oaipmh.OAIPMHMetadataFormat{
 			formats.GetDublinCoreFormat(),
-			formats.GetCMDIFormat(&profiles.CNCResourceProfile{}),
+			formats.GetCMDIFormat(),
 		},
 	)
 	if req.Identifier != "" {
