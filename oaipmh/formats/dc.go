@@ -25,12 +25,6 @@ import (
 
 const DublinCoreMetadataPrefix = "oai_dc"
 
-type DataArray []MultilangElement
-
-func (d *DataArray) Add(value string, lang string) {
-	*d = append(*d, MultilangElement{Value: value, Lang: lang})
-}
-
 // note - omitempties are optional
 
 type DublinCore struct {
@@ -40,21 +34,21 @@ type DublinCore struct {
 	XMLNSXSI          string   `xml:"xmlns:xsi,attr"`
 	XSISchemaLocation string   `xml:"xsi:schemaLocation,attr"`
 
-	Title       DataArray `xml:"dc:title"`
-	Creator     DataArray `xml:"dc:creator"`
-	Subject     DataArray `xml:"dc:subject"`
-	Description DataArray `xml:"dc:description"`
-	Publisher   DataArray `xml:"dc:publisher"`
-	Contributor DataArray `xml:"dc:contributor"`
-	Date        DataArray `xml:"dc:date"` // ISO 8601
-	Type        DataArray `xml:"dc:type"`
-	Format      DataArray `xml:"dc:format"`
-	Identifier  DataArray `xml:"dc:identifier"`
-	Source      DataArray `xml:"dc:source"`
-	Language    DataArray `xml:"dc:language"` // ISO 639 + optionally ISO 3166
-	Relation    DataArray `xml:"dc:relation"`
-	Coverage    DataArray `xml:"dc:coverage"`
-	Rights      DataArray `xml:"dc:rights"`
+	Title       MultilangArray `xml:"dc:title"`
+	Creator     MultilangArray `xml:"dc:creator"`
+	Subject     MultilangArray `xml:"dc:subject"`
+	Description MultilangArray `xml:"dc:description"`
+	Publisher   MultilangArray `xml:"dc:publisher"`
+	Contributor MultilangArray `xml:"dc:contributor"`
+	Date        MultilangArray `xml:"dc:date"` // ISO 8601
+	Type        MultilangArray `xml:"dc:type"`
+	Format      MultilangArray `xml:"dc:format"`
+	Identifier  MultilangArray `xml:"dc:identifier"`
+	Source      MultilangArray `xml:"dc:source"`
+	Language    MultilangArray `xml:"dc:language"` // ISO 639 + optionally ISO 3166
+	Relation    MultilangArray `xml:"dc:relation"`
+	Coverage    MultilangArray `xml:"dc:coverage"`
+	Rights      MultilangArray `xml:"dc:rights"`
 }
 
 func NewDublinCore() DublinCore {

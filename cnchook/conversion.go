@@ -69,7 +69,7 @@ func (c *CNCHook) cmdiLindatClarinRecordFromData(data *cncdb.DBData) oaipmh.OAIP
 	recordID := fmt.Sprint(data.ID)
 	profile := &profiles.CNCResourceProfile{
 		BibliographicInfo: components.BibliographicInfoComponent{
-			Titles: []formats.MultilangElement{
+			Titles: formats.MultilangArray{
 				{Lang: "en", Value: data.TitleEN},
 			},
 			Identifiers: []formats.TypedElement{
@@ -95,10 +95,7 @@ func (c *CNCHook) cmdiLindatClarinRecordFromData(data *cncdb.DBData) oaipmh.OAIP
 		},
 	}
 	if data.TitleCS != "" {
-		profile.BibliographicInfo.Titles = append(
-			profile.BibliographicInfo.Titles,
-			formats.MultilangElement{Lang: "cs", Value: data.TitleCS},
-		)
+		profile.BibliographicInfo.Titles.Add(data.TitleCS, "cs")
 	}
 	metadata := formats.NewCMDI(profile)
 	metadata.Header.MdSelfLink = fmt.Sprintf("%s/record/%s?format=cmdi", c.conf.RepositoryInfo.BaseURL, recordID)
