@@ -127,7 +127,7 @@ func (c *CNCMySQLHandler) parseLocale(loc string) (ans language.Tag, err error) 
 
 func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 	var data DBData
-	var locale sql.NullString
+	var locale, titleCS sql.NullString
 	row := c.conn.QueryRow(
 		fmt.Sprintf(
 			"SELECT m.id, GREATEST(m.created, m.updated), m.type, m.title_en, m.title_cs, m.license_info, m.authors, "+
@@ -152,7 +152,7 @@ func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 		), identifier, c.publicCorplistID,
 	)
 	err := row.Scan(
-		&data.ID, &data.Date, &data.Type, &data.TitleEN, &data.TitleCS, &data.License, &data.Authors,
+		&data.ID, &data.Date, &data.Type, &data.TitleEN, &titleCS, &data.License, &data.Authors,
 		&data.ContactPerson.Firstname, &data.ContactPerson.Lastname, &data.ContactPerson.Email, &data.ContactPerson.Affiliation,
 		&data.Name, &data.Description, &data.Link,
 		&data.CorpusData.Size, &locale, &data.CorpusData.Keywords,
@@ -170,6 +170,7 @@ func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 		}
 		data.CorpusData.Locale = &tag
 	}
+	data.TitleCS = titleCS.String
 	return &data, nil
 }
 
@@ -219,9 +220,9 @@ func (c *CNCMySQLHandler) ListRecordInfo(from *time.Time, until *time.Time) ([]D
 	results := make([]DBData, 0, 10)
 	for rows.Next() {
 		var row DBData
-		var locale sql.NullString
+		var locale, titleCS sql.NullString
 		err := rows.Scan(
-			&row.ID, &row.Date, &row.Type, &row.TitleEN, &row.TitleCS, &row.License, &row.Authors,
+			&row.ID, &row.Date, &row.Type, &row.TitleEN, &titleCS, &row.License, &row.Authors,
 			&row.ContactPerson.Firstname, &row.ContactPerson.Lastname, &row.ContactPerson.Email, &row.ContactPerson.Affiliation,
 			&row.Name, &row.Description, &row.Link,
 			&row.CorpusData.Size, &locale, &row.CorpusData.Keywords,
@@ -236,6 +237,7 @@ func (c *CNCMySQLHandler) ListRecordInfo(from *time.Time, until *time.Time) ([]D
 			}
 			row.CorpusData.Locale = &tag
 		}
+		row.TitleCS = titleCS.String
 		results = append(results, row)
 	}
 	return results, nil

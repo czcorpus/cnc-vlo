@@ -33,7 +33,9 @@ func (c *CNCHook) dcRecordFromData(data *cncdb.DBData) oaipmh.OAIPMHRecord {
 	recordID := fmt.Sprint(data.ID)
 	metadata := formats.NewDublinCore()
 	metadata.Title.Add(data.TitleEN, "en")
-	metadata.Title.Add(data.TitleCS, "cs")
+	if data.TitleCS != "" {
+		metadata.Title.Add(data.TitleCS, "cs")
+	}
 	metadata.Date.Add(data.Date.In(time.UTC).Format(time.RFC3339), "")
 	for _, author := range getAuthorList(data) {
 		if author.FirstName == "" {
@@ -69,7 +71,6 @@ func (c *CNCHook) cmdiLindatClarinRecordFromData(data *cncdb.DBData) oaipmh.OAIP
 		BibliographicInfo: components.BibliographicInfoComponent{
 			Titles: []formats.MultilangElement{
 				{Lang: "en", Value: data.TitleEN},
-				{Lang: "cs", Value: data.TitleCS},
 			},
 			Identifiers: []formats.TypedElement{
 				{Value: data.Name},
@@ -92,6 +93,12 @@ func (c *CNCHook) cmdiLindatClarinRecordFromData(data *cncdb.DBData) oaipmh.OAIP
 		LicenseInfo: []profiles.LicenseElement{
 			{URI: data.License},
 		},
+	}
+	if data.TitleCS != "" {
+		profile.BibliographicInfo.Titles = append(
+			profile.BibliographicInfo.Titles,
+			formats.MultilangElement{Lang: "cs", Value: data.TitleCS},
+		)
 	}
 	metadata := formats.NewCMDI(profile)
 	metadata.Header.MdSelfLink = fmt.Sprintf("%s/record/%s?format=cmdi", c.conf.RepositoryInfo.BaseURL, recordID)
