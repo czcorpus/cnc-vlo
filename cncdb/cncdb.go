@@ -48,7 +48,8 @@ type DBData struct {
 	Date          time.Time
 	Type          string
 	Name          string
-	Title         string
+	TitleEN       string
+	TitleCS       string
 	Description   sql.NullString
 	Link          sql.NullString
 	License       string
@@ -129,7 +130,7 @@ func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 	var locale sql.NullString
 	row := c.conn.QueryRow(
 		fmt.Sprintf(
-			"SELECT m.id, GREATEST(m.created, m.updated), m.type, m.title, m.license_info, m.authors, "+
+			"SELECT m.id, GREATEST(m.created, m.updated), m.type, m.title_en, m.title_cs, m.license_info, m.authors, "+
 				"u.%s, u.%s, u.email, u.affiliation, "+
 				"COALESCE(c.name, ms.name), "+
 				"COALESCE(c.description_en, ms.description), "+
@@ -151,7 +152,7 @@ func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 		), identifier, c.publicCorplistID,
 	)
 	err := row.Scan(
-		&data.ID, &data.Date, &data.Type, &data.Title, &data.License, &data.Authors,
+		&data.ID, &data.Date, &data.Type, &data.TitleEN, &data.TitleCS, &data.License, &data.Authors,
 		&data.ContactPerson.Firstname, &data.ContactPerson.Lastname, &data.ContactPerson.Email, &data.ContactPerson.Affiliation,
 		&data.Name, &data.Description, &data.Link,
 		&data.CorpusData.Size, &locale, &data.CorpusData.Keywords,
@@ -190,7 +191,7 @@ func (c *CNCMySQLHandler) ListRecordInfo(from *time.Time, until *time.Time) ([]D
 		whereValues = append(whereValues, until)
 	}
 	query := fmt.Sprintf(
-		"SELECT m.id, GREATEST(m.created, m.updated), m.type, m.title, m.license_info, m.authors, "+
+		"SELECT m.id, GREATEST(m.created, m.updated), m.type, m.title_en, m.title_cs, m.license_info, m.authors, "+
 			"u.%s, u.%s, u.email, u.affiliation, "+
 			"COALESCE(c.name, ms.name), "+
 			"COALESCE(c.description_en, ms.description), "+
@@ -220,7 +221,7 @@ func (c *CNCMySQLHandler) ListRecordInfo(from *time.Time, until *time.Time) ([]D
 		var row DBData
 		var locale sql.NullString
 		err := rows.Scan(
-			&row.ID, &row.Date, &row.Type, &row.Title, &row.License, &row.Authors,
+			&row.ID, &row.Date, &row.Type, &row.TitleEN, &row.TitleCS, &row.License, &row.Authors,
 			&row.ContactPerson.Firstname, &row.ContactPerson.Lastname, &row.ContactPerson.Email, &row.ContactPerson.Affiliation,
 			&row.Name, &row.Description, &row.Link,
 			&row.CorpusData.Size, &locale, &row.CorpusData.Keywords,

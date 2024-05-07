@@ -32,7 +32,8 @@ import (
 func (c *CNCHook) dcRecordFromData(data *cncdb.DBData) oaipmh.OAIPMHRecord {
 	recordID := fmt.Sprint(data.ID)
 	metadata := formats.NewDublinCore()
-	metadata.Title.Add(data.Title, "en")
+	metadata.Title.Add(data.TitleEN, "en")
+	metadata.Title.Add(data.TitleCS, "cs")
 	metadata.Date.Add(data.Date.In(time.UTC).Format(time.RFC3339), "")
 	for _, author := range getAuthorList(data) {
 		if author.FirstName == "" {
@@ -67,7 +68,8 @@ func (c *CNCHook) cmdiLindatClarinRecordFromData(data *cncdb.DBData) oaipmh.OAIP
 	profile := &profiles.CNCResourceProfile{
 		BibliographicInfo: components.BibliographicInfoComponent{
 			Titles: []formats.MultilangElement{
-				{Lang: "en", Value: data.Title},
+				{Lang: "en", Value: data.TitleEN},
+				{Lang: "cs", Value: data.TitleCS},
 			},
 			Identifiers: []formats.TypedElement{
 				{Value: data.Name},
