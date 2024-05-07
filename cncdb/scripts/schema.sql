@@ -18,7 +18,7 @@ CREATE TABLE vlo_metadata_common (
   deleted TINYINT(1) DEFAULT 0,
   type ENUM('corpus', 'service') NOT NULL,
   title_en VARCHAR(255) NOT NULL,
-  title_cs VARCHAR(255) NOT NULL,
+  title_cs VARCHAR(255),
   license_info VARCHAR(255) NOT NULL,
   contact_user_id INT(11) NOT NULL,
   authors TEXT NOT NULL,
