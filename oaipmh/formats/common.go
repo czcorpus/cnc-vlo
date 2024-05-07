@@ -23,6 +23,12 @@ type MultilangElement struct {
 	Value string `xml:",chardata"`
 }
 
+type MultilangArray []MultilangElement
+
+func (d *MultilangArray) Add(value string, lang string) {
+	*d = append(*d, MultilangElement{Value: value, Lang: lang})
+}
+
 type TypedElement struct {
 	Type  string `xml:"type,attr,omitempty"`
 	Value string `xml:",chardata"`

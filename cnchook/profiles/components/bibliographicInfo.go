@@ -21,15 +21,15 @@ import "github.com/czcorpus/cnc-vlo/oaipmh/formats"
 // note - omitempties are optional
 
 type BibliographicInfoComponent struct {
-	ProjectUrl    string                     `xml:"cmdp:projectUrl,omitempty"`
-	Version       string                     `xml:"cmdp:version,omitempty"`
-	Titles        []formats.MultilangElement `xml:"cmdp:titles>cmdp:title"`
-	Authors       []AuthorComponent          `xml:"cmdp:authors>cmdp:author"`
-	Dates         *DatesComponent            `xml:"cmdp:dates,omitempty"`
-	Identifiers   []formats.TypedElement     `xml:"cmdp:identifiers>cmdp:identifier"`
-	Funds         *[]FundingComponent        `xml:"cmdp:funding>cmdp:funds,omitempty"`
-	ContactPerson ContactPersonComponent     `xml:"cmdp:contactPerson"`
-	Publishers    []string                   `xml:"cmdp:publishers>cmdp:publisher"`
+	ProjectUrl    string                 `xml:"cmdp:projectUrl,omitempty"`
+	Version       string                 `xml:"cmdp:version,omitempty"`
+	Titles        formats.MultilangArray `xml:"cmdp:titles>cmdp:title"`
+	Authors       []AuthorComponent      `xml:"cmdp:authors>cmdp:author"`
+	Dates         *DatesComponent        `xml:"cmdp:dates,omitempty"`
+	Identifiers   []formats.TypedElement `xml:"cmdp:identifiers>cmdp:identifier"`
+	Funds         *[]FundingComponent    `xml:"cmdp:funding>cmdp:funds,omitempty"`
+	ContactPerson ContactPersonComponent `xml:"cmdp:contactPerson"`
+	Publishers    []string               `xml:"cmdp:publishers>cmdp:publisher"`
 }
 
 type AuthorComponent struct {
