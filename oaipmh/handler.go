@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/czcorpus/cnc-gokit/collections"
+	"github.com/czcorpus/cnc-gokit/logging"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 )
@@ -226,6 +227,7 @@ func (a *VLOHandler) HandleOAIGet(ctx *gin.Context) {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
+	logging.AddLogEvent(ctx, "operation", req.Verb)
 	if resp.Errors.HasErrors() {
 		writeXMLResponse(ctx.Writer, http.StatusBadRequest, resp)
 		return
@@ -245,6 +247,7 @@ func (a *VLOHandler) HandleOAIPost(ctx *gin.Context) {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
+	logging.AddLogEvent(ctx, "operation", req.Verb)
 	if resp.Errors.HasErrors() {
 		writeXMLResponse(ctx.Writer, http.StatusBadRequest, resp)
 		return
