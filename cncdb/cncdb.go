@@ -48,9 +48,10 @@ type DBData struct {
 	Date          time.Time
 	Type          string
 	Name          string
+	DescEN        sql.NullString
+	DescCS        sql.NullString
 	TitleEN       string
 	TitleCS       string
-	Description   sql.NullString
 	Link          sql.NullString
 	License       string
 	Authors       string
@@ -127,13 +128,24 @@ func (c *CNCMySQLHandler) parseLocale(loc string) (ans language.Tag, err error) 
 
 func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 	var data DBData
-	var locale, titleCS sql.NullString
+	var locale sql.NullString
 	row := c.conn.QueryRow(
 		fmt.Sprintf(
-			"SELECT m.id, GREATEST(m.created, m.updated), m.type, m.title_en, m.title_cs, m.license_info, m.authors, "+
-				"u.%s, u.%s, u.email, u.affiliation, "+
+			"SELECT "+
+				"m.id, "+
+				"GREATEST(m.created, m.updated), "+
+				"m.type, "+
+				"m.desc_en, "+
+				"m.desc_cs, "+
+				"m.license_info, "+
+				"m.authors, "+
+				"u.%s, "+
+				"u.%s, "+
+				"u.email, "+
+				"u.affiliation, "+
 				"COALESCE(c.name, ms.name), "+
-				"COALESCE(c.description_en, ms.description), "+
+				"CONCAT(c.name, ': ', c.description_en), "+
+				"CONCAT(c.name, ': ', c.description_cs), "+
 				"COALESCE(c.web, ms.link), "+
 				"c.size, c.locale, GROUP_CONCAT(k.label_en ORDER BY k.display_order SEPARATOR ',') "+
 				"FROM vlo_metadata_common AS m "+
@@ -152,9 +164,9 @@ func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 		), identifier, c.publicCorplistID,
 	)
 	err := row.Scan(
-		&data.ID, &data.Date, &data.Type, &data.TitleEN, &titleCS, &data.License, &data.Authors,
-		&data.ContactPerson.Firstname, &data.ContactPerson.Lastname, &data.ContactPerson.Email, &data.ContactPerson.Affiliation,
-		&data.Name, &data.Description, &data.Link,
+		&data.ID, &data.Date, &data.Type, &data.DescEN, &data.DescCS, &data.License, &data.Authors,
+		&data.ContactPerson.Firstname, &data.ContactPerson.Lastname, &data.ContactPerson.Email,
+		&data.ContactPerson.Affiliation, &data.Name, &data.TitleEN, &data.TitleCS, &data.Link,
 		&data.CorpusData.Size, &locale, &data.CorpusData.Keywords,
 	)
 	if err != nil {
@@ -163,14 +175,13 @@ func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 		}
 		return nil, fmt.Errorf("failed to get record info: %w", err)
 	}
-	if locale.String != "" {
+	if locale.Valid {
 		tag, err := c.parseLocale(locale.String)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get record info: %w", err)
 		}
 		data.CorpusData.Locale = &tag
 	}
-	data.TitleCS = titleCS.String
 	return &data, nil
 }
 
@@ -192,12 +203,24 @@ func (c *CNCMySQLHandler) ListRecordInfo(from *time.Time, until *time.Time) ([]D
 		whereValues = append(whereValues, until)
 	}
 	query := fmt.Sprintf(
-		"SELECT m.id, GREATEST(m.created, m.updated), m.type, m.title_en, m.title_cs, m.license_info, m.authors, "+
-			"u.%s, u.%s, u.email, u.affiliation, "+
-			"COALESCE(c.name, ms.name), "+
-			"COALESCE(c.description_en, ms.description), "+
+		"SELECT "+
+			"m.id, "+
+			" GREATEST(m.created, m.updated), "+
+			"m.type, "+
+			"m.desc_en, "+
+			"m.desc_cs, "+
+			"m.license_info, "+
+			"m.authors, "+
+			"u.%s, "+
+			"u.%s, "+
+			"u.email, "+
+			"u.affiliation, "+
+			"CONCAT(c.name, ': ', c.description_en), "+
+			"CONCAT(c.name, ': ', c.description_cs), "+
 			"COALESCE(c.web, ms.link), "+
-			"c.size, c.locale, GROUP_CONCAT(k.label_en ORDER BY k.display_order SEPARATOR ',') "+
+			"c.size, "+
+			"c.locale, "+
+			"GROUP_CONCAT(k.label_en ORDER BY k.display_order SEPARATOR ',') "+
 			"FROM vlo_metadata_common AS m "+
 			"LEFT JOIN vlo_metadata_corpus AS mc ON m.corpus_metadata_id = mc.id "+
 			"LEFT JOIN vlo_metadata_service AS ms ON m.service_metadata_id = ms.id "+
@@ -220,11 +243,11 @@ func (c *CNCMySQLHandler) ListRecordInfo(from *time.Time, until *time.Time) ([]D
 	results := make([]DBData, 0, 10)
 	for rows.Next() {
 		var row DBData
-		var locale, titleCS sql.NullString
+		var locale sql.NullString
 		err := rows.Scan(
-			&row.ID, &row.Date, &row.Type, &row.TitleEN, &titleCS, &row.License, &row.Authors,
-			&row.ContactPerson.Firstname, &row.ContactPerson.Lastname, &row.ContactPerson.Email, &row.ContactPerson.Affiliation,
-			&row.Name, &row.Description, &row.Link,
+			&row.ID, &row.Date, &row.Type, &row.DescEN, &row.DescCS, &row.License, &row.Authors,
+			&row.ContactPerson.Firstname, &row.ContactPerson.Lastname, &row.ContactPerson.Email,
+			&row.ContactPerson.Affiliation, &row.TitleEN, &row.TitleCS, &row.Link,
 			&row.CorpusData.Size, &locale, &row.CorpusData.Keywords,
 		)
 		if err != nil {
@@ -237,7 +260,6 @@ func (c *CNCMySQLHandler) ListRecordInfo(from *time.Time, until *time.Time) ([]D
 			}
 			row.CorpusData.Locale = &tag
 		}
-		row.TitleCS = titleCS.String
 		results = append(results, row)
 	}
 	return results, nil
