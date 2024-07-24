@@ -38,7 +38,7 @@ func (c *CNCHook) dcRecordFromData(data *cncdb.DBData) oaipmh.OAIPMHRecord {
 		metadata.Description.Add(data.DescCS.String, "cs")
 	}
 	if data.DescEN.Valid {
-		metadata.Description.Add(data.DescCS.String, "en")
+		metadata.Description.Add(data.DescEN.String, "en")
 	}
 	metadata.Date.Add(data.Date.In(time.UTC).Format(time.RFC3339), "")
 	for _, author := range getAuthorList(data) {
