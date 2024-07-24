@@ -215,8 +215,8 @@ func (c *CNCMySQLHandler) ListRecordInfo(from *time.Time, until *time.Time) ([]D
 			"u.%s, "+
 			"u.email, "+
 			"u.affiliation, "+
-			"CONCAT(c.name, ': ', c.description_en), "+
-			"CONCAT(c.name, ': ', c.description_cs), "+
+			"IFNULL(CONCAT(c.name, ': ', c.description_en), c.name), "+
+			"IFNULL(CONCAT(c.name, ': ', c.description_cs), c.name), "+
 			"COALESCE(c.web, ms.link), "+
 			"c.size, "+
 			"c.locale, "+
