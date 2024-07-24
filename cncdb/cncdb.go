@@ -144,8 +144,8 @@ func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 				"u.email, "+
 				"u.affiliation, "+
 				"COALESCE(c.name, ms.name), "+
-				"CONCAT(c.name, ': ', c.description_en), "+
-				"CONCAT(c.name, ': ', c.description_cs), "+
+				"IFNULL(CONCAT(c.name, ': ', c.description_en), c.name), "+
+				"IFNULL(CONCAT(c.name, ': ', c.description_cs), c.name), "+
 				"COALESCE(c.web, ms.link), "+
 				"c.size, c.locale, GROUP_CONCAT(k.label_en ORDER BY k.display_order SEPARATOR ',') "+
 				"FROM vlo_metadata_common AS m "+
