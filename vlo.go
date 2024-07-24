@@ -114,12 +114,12 @@ func main() {
 	flag.Parse()
 	action := flag.Arg(0)
 	if action == "version" {
-		fmt.Printf("mquery %s\nbuild date: %s\nlast commit: %s\n", version.Version, version.BuildDate, version.GitCommit)
+		fmt.Printf("cnc-vlo %s\nbuild date: %s\nlast commit: %s\n", version.Version, version.BuildDate, version.GitCommit)
 		return
 	}
 	conf := cnf.LoadConfig(flag.Arg(1))
 	logging.SetupLogging(conf.LogFile, conf.LogLevel)
-	log.Info().Msg("Starting VLO")
+	log.Info().Msg("Starting CNC-VLO node")
 	cnf.ValidateAndDefaults(conf)
 	syscallChan := make(chan os.Signal, 1)
 	signal.Notify(syscallChan, os.Interrupt)
