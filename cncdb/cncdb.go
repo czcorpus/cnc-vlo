@@ -135,7 +135,7 @@ func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 				"m.id, "+
 				"GREATEST(m.created, m.updated), "+
 				"m.type, "+
-				"COALESCE(m.desc_en, ms.description), "+
+				"m.desc_en, "+
 				"m.desc_cs, "+
 				"m.license_info, "+
 				"m.authors, "+
@@ -207,7 +207,7 @@ func (c *CNCMySQLHandler) ListRecordInfo(from *time.Time, until *time.Time) ([]D
 			"m.id, "+
 			" GREATEST(m.created, m.updated), "+
 			"m.type, "+
-			"COALESCE(m.desc_en, ms.description), "+
+			"m.desc_en, "+
 			"m.desc_cs, "+
 			"m.license_info, "+
 			"m.authors, "+

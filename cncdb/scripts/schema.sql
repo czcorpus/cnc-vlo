@@ -8,7 +8,6 @@ CREATE TABLE vlo_metadata_corpus (
 CREATE TABLE vlo_metadata_service (
   id int(11) PRIMARY KEY NOT NULL AUTO_INCREMENT,
   name varchar(255) NOT NULL,
-  description varchar(255) NOT NULL,
   link varchar(255) NOT NULL,
   UNIQUE (name)
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
