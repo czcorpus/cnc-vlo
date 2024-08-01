@@ -91,8 +91,11 @@ func (c *CNCHook) cmdiLindatClarinRecordFromData(data *cncdb.DBData) oaipmh.OAIP
 			},
 		},
 		DataInfoInfo: components.DataInfoComponent{
-			Type:        data.Type,
-			Description: data.DescEN.String,
+			Type: data.Type,
+			Description: formats.MultilangArray{
+				{Lang: "en", Value: data.DescEN.String},
+				{Lang: "cs", Value: data.DescCS.String},
+			},
 		},
 		LicenseInfo: []profiles.LicenseElement{
 			{URI: data.License},
