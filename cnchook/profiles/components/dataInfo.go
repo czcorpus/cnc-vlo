@@ -23,7 +23,7 @@ import "github.com/czcorpus/cnc-vlo/oaipmh/formats"
 type DataInfoComponent struct {
 	Type           string                   `xml:"cmdp:type"`                   // e.g. corpus, tool
 	DetailedType   string                   `xml:"cmdp:detailedType,omitempty"` // Further specification of the type
-	Description    string                   `xml:"cmdp:description"`
+	Description    formats.MultilangArray   `xml:"cmdp:description"`
 	Languages      *[]LanguageComponent     `xml:"cmdp:languages>cmdp:language,omitempty"`
 	Keywords       *[]string                `xml:"cmdp:keywords>cmdp:keyword,omitempty"`
 	Links          *[]formats.TypedElement  `xml:"cmdp:links>cmdp:link,omitempty"` // demo url, documentation url
