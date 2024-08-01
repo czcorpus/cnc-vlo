@@ -101,6 +101,9 @@ func (c *CNCHook) cmdiLindatClarinRecordFromData(data *cncdb.DBData) oaipmh.OAIP
 			{URI: data.License},
 		},
 	}
+	if data.DateIssued == "" {
+		profile.BibliographicInfo.Dates = &components.DatesComponent{DateIssued: data.DateIssued}
+	}
 	metadata := formats.NewCMDI(profile)
 	metadata.Header.MdSelfLink = fmt.Sprintf("%s/record/%s?format=cmdi", c.conf.RepositoryInfo.BaseURL, recordID)
 
