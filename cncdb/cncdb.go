@@ -83,7 +83,7 @@ func (c *CNCMySQLHandler) IdentifierExists(identifier string) (bool, error) {
 	var id int
 	row := c.conn.QueryRow(
 		fmt.Sprintf(
-			"SELECT id FROM vlo_metadata_common AS m "+
+			"SELECT m.id FROM vlo_metadata_common AS m "+
 				"LEFT JOIN vlo_metadata_corpus AS mc ON m.corpus_metadata_id = mc.id "+
 				"LEFT JOIN %s AS c ON m.corpus_name = c.name "+
 				"LEFT JOIN corplist_corpus AS cc ON c.id = cc.corpus_id "+
@@ -129,6 +129,7 @@ func (c *CNCMySQLHandler) parseLocale(loc string) (ans language.Tag, err error) 
 func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 	var data DBData
 	var locale sql.NullString
+
 	row := c.conn.QueryRow(
 		fmt.Sprintf(
 			"SELECT "+
@@ -155,13 +156,14 @@ func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 				"LEFT JOIN kontext_keyword_corpus AS kc ON kc.corpus_name = c.name "+
 				"LEFT JOIN kontext_keyword AS k ON kc.keyword_id = k.id "+
 				"LEFT JOIN corplist_corpus AS cc ON c.id = cc.corpus_id "+
+				"LEFT JOIN corplist_parallel_corpus AS cpc ON cpc.parallel_corpus_id = c.parallel_corpus_id "+
 				"JOIN %s AS u ON m.contact_user_id = u.id "+
 				"WHERE m.id = ? AND m.deleted = FALSE "+
-				"AND ((m.type = 'corpus' AND cc.corplist_id = ?) OR m.type != 'corpus') "+
+				"AND ((m.type = 'corpus' AND cc.corplist_id = ?) OR (cpc.corplist_id = ?) OR m.type != 'corpus') "+
 				"GROUP BY kc.corpus_name ",
 			c.overrides.UserTableFirstNameCol, c.overrides.UserTableLastNameCol,
 			c.overrides.CorporaTableName, c.overrides.UserTableName,
-		), identifier, c.publicCorplistID,
+		), identifier, c.publicCorplistID, c.publicCorplistID,
 	)
 	err := row.Scan(
 		&data.ID, &data.Date, &data.Type, &data.DescEN, &data.DescCS, &data.License, &data.Authors,
@@ -188,10 +190,11 @@ func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 func (c *CNCMySQLHandler) ListRecordInfo(from *time.Time, until *time.Time) ([]DBData, error) {
 	whereClause := []string{
 		"m.deleted = ?",
-		"((m.type = 'corpus' AND cc.corplist_id = ?) OR m.type != 'corpus')",
+		"((m.type = 'corpus' AND cc.corplist_id = ?) OR cpc.corplist_id = ? OR m.type != 'corpus')",
 	}
 	whereValues := []any{
 		"FALSE",
+		c.publicCorplistID,
 		c.publicCorplistID,
 	}
 	if from != nil {
@@ -228,6 +231,7 @@ func (c *CNCMySQLHandler) ListRecordInfo(from *time.Time, until *time.Time) ([]D
 			"LEFT JOIN kontext_keyword_corpus AS kc ON kc.corpus_name = c.name "+
 			"LEFT JOIN kontext_keyword AS k ON kc.keyword_id = k.id "+
 			"LEFT JOIN corplist_corpus AS cc ON c.id = cc.corpus_id "+
+			"LEFT JOIN corplist_parallel_corpus AS cpc ON cpc.parallel_corpus_id = c.parallel_corpus_id "+
 			"JOIN %s AS u ON m.contact_user_id = u.id ",
 		c.overrides.UserTableFirstNameCol, c.overrides.UserTableLastNameCol,
 		c.overrides.CorporaTableName, c.overrides.UserTableName,
@@ -235,7 +239,7 @@ func (c *CNCMySQLHandler) ListRecordInfo(from *time.Time, until *time.Time) ([]D
 	if len(whereClause) > 0 {
 		query += " WHERE " + strings.Join(whereClause, " AND ")
 	}
-	query += " GROUP BY kc.corpus_name "
+	query += " GROUP BY c.name "
 	rows, err := c.conn.Query(query, whereValues...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list record info: %w", err)
