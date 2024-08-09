@@ -21,8 +21,8 @@ BEGIN
         SELECT id INTO @corpus_metadata_id FROM vlo_metadata_corpus WHERE corpus_name = @corpus_name;
         IF @corpus_metadata_id IS NULL THEN
             INSERT INTO vlo_metadata_corpus (corpus_name) VALUES (@corpus_name);
-            INSERT INTO vlo_metadata_common (desc_cs, desc_en, corpus_metadata_id, contact_user_id, deleted, license_info, authors)
-                VALUES (COALESCE(NEW.description_cs,''), COALESCE(NEW.description_en,''), LAST_INSERT_ID(), @contact_user_id, 1, '', '');
+            INSERT INTO vlo_metadata_common (type, desc_cs, desc_en, corpus_metadata_id, contact_user_id, deleted, license_info, authors)
+                VALUES ('corpus', COALESCE(NEW.description_cs,''), COALESCE(NEW.description_en,''), LAST_INSERT_ID(), @contact_user_id, 1, '', '');
         ELSEIF @skip_vlo_update IS NULL THEN
             SET @skip_corpora_update = 1;
             UPDATE vlo_metadata_common SET desc_cs = COALESCE(NEW.description_cs,''), desc_en = COALESCE(NEW.description_en,'') WHERE corpus_metadata_id = @corpus_metadata_id;
