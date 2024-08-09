@@ -30,7 +30,7 @@ const CNCResourceProfileID = "clarin.eu:cr1:p_1712653174418"
 
 type CNCResourceProfile struct {
 	BibliographicInfo components.BibliographicInfoComponent `xml:"cmdp:CNC_Resource>cmdp:bibliographicInfo"`
-	DataInfoInfo      components.DataInfoComponent          `xml:"cmdp:CNC_Resource>cmdp:dataInfo"`
+	DataInfo          components.DataInfoComponent          `xml:"cmdp:CNC_Resource>cmdp:dataInfo"`
 	LicenseInfo       []LicenseElement                      `xml:"cmdp:CNC_Resource>cmdp:licenseInfo>cmdp:license"`
 	RelationsInfo     *[]formats.TypedElement               `xml:"cmdp:CNC_Resource>cmdp:relationsInfo>cmdp:relation,omitempty"`
 }

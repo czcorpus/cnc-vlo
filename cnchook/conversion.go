@@ -90,31 +90,37 @@ func (c *CNCHook) cmdiLindatClarinRecordFromData(data *cncdb.DBData) oaipmh.OAIP
 				c.conf.MetadataValues.Publisher,
 			},
 		},
-		DataInfoInfo: components.DataInfoComponent{
-			Type:        data.Type,
-			Description: data.DescEN.String,
+		DataInfo: components.DataInfoComponent{
+			Type: data.Type,
+			Description: formats.MultilangArray{
+				{Lang: "en", Value: data.DescEN.String},
+				{Lang: "cs", Value: data.DescCS.String},
+			},
 		},
 		LicenseInfo: []profiles.LicenseElement{
 			{URI: data.License},
 		},
+	}
+	if data.DateIssued == "" {
+		profile.BibliographicInfo.Dates = &components.DatesComponent{DateIssued: data.DateIssued}
 	}
 	metadata := formats.NewCMDI(profile)
 	metadata.Header.MdSelfLink = fmt.Sprintf("%s/record/%s?format=cmdi", c.conf.RepositoryInfo.BaseURL, recordID)
 
 	switch MetadataType(data.Type) {
 	case CorpusMetadataType:
-		profile.DataInfoInfo.SizeInfo = &[]components.SizeComponent{
+		profile.DataInfo.SizeInfo = &[]components.SizeComponent{
 			{Size: fmt.Sprint(data.CorpusData.Size.Int64), Unit: "words"},
 		}
 		if data.CorpusData.Locale != nil {
 			base, _ := data.CorpusData.Locale.Base()
-			profile.DataInfoInfo.Languages = &[]components.LanguageComponent{
+			profile.DataInfo.Languages = &[]components.LanguageComponent{
 				{Name: display.English.Languages().Name(base), Code: base.String()},
 			}
 		}
 		if data.CorpusData.Keywords.String != "" {
 			keywords := strings.Split(data.CorpusData.Keywords.String, ",")
-			profile.DataInfoInfo.Keywords = &keywords
+			profile.DataInfo.Keywords = &keywords
 		}
 		metadata.Resources.ResourceProxyList = append(
 			metadata.Resources.ResourceProxyList,

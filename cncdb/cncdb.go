@@ -46,10 +46,12 @@ type CNCMySQLHandler struct {
 type DBData struct {
 	ID            int
 	Date          time.Time
+	Hosted        bool
 	Type          string
 	Name          string
 	DescEN        sql.NullString
 	DescCS        sql.NullString
+	DateIssued    string
 	TitleEN       string
 	TitleCS       string
 	Link          sql.NullString
@@ -135,9 +137,11 @@ func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 			"SELECT "+
 				"m.id, "+
 				"GREATEST(m.created, m.updated), "+
+				"m.hosted, "+
 				"m.type, "+
 				"m.desc_en, "+
 				"m.desc_cs, "+
+				"m.date_issued, "+
 				"m.license_info, "+
 				"m.authors, "+
 				"u.%s, "+
@@ -166,7 +170,7 @@ func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 		), identifier, c.publicCorplistID, c.publicCorplistID,
 	)
 	err := row.Scan(
-		&data.ID, &data.Date, &data.Type, &data.DescEN, &data.DescCS, &data.License, &data.Authors,
+		&data.ID, &data.Date, &data.Hosted, &data.Type, &data.DescEN, &data.DescCS, &data.DateIssued, &data.License, &data.Authors,
 		&data.ContactPerson.Firstname, &data.ContactPerson.Lastname, &data.ContactPerson.Email,
 		&data.ContactPerson.Affiliation, &data.Name, &data.TitleEN, &data.TitleCS, &data.Link,
 		&data.CorpusData.Size, &locale, &data.CorpusData.Keywords,
@@ -209,9 +213,11 @@ func (c *CNCMySQLHandler) ListRecordInfo(from *time.Time, until *time.Time) ([]D
 		"SELECT "+
 			"m.id, "+
 			" GREATEST(m.created, m.updated), "+
+			"m.hosted, "+
 			"m.type, "+
 			"m.desc_en, "+
 			"m.desc_cs, "+
+			"m.date_issued, "+
 			"m.license_info, "+
 			"m.authors, "+
 			"u.%s, "+
@@ -249,7 +255,7 @@ func (c *CNCMySQLHandler) ListRecordInfo(from *time.Time, until *time.Time) ([]D
 		var row DBData
 		var locale sql.NullString
 		err := rows.Scan(
-			&row.ID, &row.Date, &row.Type, &row.DescEN, &row.DescCS, &row.License, &row.Authors,
+			&row.ID, &row.Date, &row.Hosted, &row.Type, &row.DescEN, &row.DescCS, &row.DateIssued, &row.License, &row.Authors,
 			&row.ContactPerson.Firstname, &row.ContactPerson.Lastname, &row.ContactPerson.Email,
 			&row.ContactPerson.Affiliation, &row.TitleEN, &row.TitleCS, &row.Link,
 			&row.CorpusData.Size, &locale, &row.CorpusData.Keywords,
