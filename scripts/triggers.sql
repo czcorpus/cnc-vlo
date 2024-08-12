@@ -10,6 +10,7 @@ DELIMITER //
 
 DROP TRIGGER IF EXISTS sync_descriptions_from_corpora_trig //
 DROP TRIGGER IF EXISTS sync_descriptions_from_metadata_trig //
+DROP TRIGGER IF EXISTS insert_metadata_on_corpora_insert_trig //
 
 CREATE TRIGGER sync_descriptions_from_corpora_trig
 AFTER UPDATE ON kontext_corpus
@@ -43,5 +44,16 @@ BEGIN
             SET @skip_vlo_update = NULL;
         END IF;
     END IF;
+END;
+//
+
+CREATE TRIGGER insert_metadata_on_corpora_insert_trig
+AFTER INSERT ON kontext_corpus
+FOR EACH ROW
+BEGIN
+    SET @contact_user_id = 1;
+    INSERT INTO vlo_metadata_corpus (corpus_name) VALUES (NEW.name);
+    INSERT INTO vlo_metadata_common (type, desc_cs, desc_en, corpus_metadata_id, contact_user_id, deleted, license_info, authors, date_issued)
+        VALUES ('corpus', NEW.description_cs, NEW.description_en, LAST_INSERT_ID(), @contact_user_id, 1, '', '', '');
 END;
 //
