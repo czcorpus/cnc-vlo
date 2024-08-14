@@ -126,7 +126,7 @@ func (c *CNCHook) cmdiLindatClarinRecordFromData(data *cncdb.DBData) oaipmh.OAIP
 			metadata.Resources.ResourceProxyList,
 			formats.CMDIResourceProxy{
 				ID:           fmt.Sprintf("sp_%s", recordID),
-				ResourceType: formats.CMDIResourceType{MimeType: "text/html", Value: formats.RTSearchPage},
+				ResourceType: formats.CMDIResourceType{MimeType: "application/http", Value: formats.RTSearchPage},
 				ResourceRef:  getKontextPath(data.Name),
 			},
 		)
@@ -137,12 +137,17 @@ func (c *CNCHook) cmdiLindatClarinRecordFromData(data *cncdb.DBData) oaipmh.OAIP
 
 	// insert link if available
 	if data.Link.String != "" {
+		link := data.Link.String
+		// generate path to english version wiki
+		if strings.Contains(link, "wiki.korpus.cz") {
+			link = strings.ReplaceAll(link, "/cnk:", "/en:cnk:")
+		}
 		metadata.Resources.ResourceProxyList = append(
 			metadata.Resources.ResourceProxyList,
 			formats.CMDIResourceProxy{
 				ID:           fmt.Sprintf("uri_%s", recordID),
 				ResourceType: formats.CMDIResourceType{MimeType: "text/html", Value: formats.RTResource},
-				ResourceRef:  data.Link.String,
+				ResourceRef:  link,
 			},
 		)
 	}
