@@ -225,6 +225,7 @@ func (c *CNCMySQLHandler) ListRecordInfo(from *time.Time, until *time.Time) ([]D
 			"u.%s, "+
 			"u.email, "+
 			"u.affiliation, "+
+			"COALESCE(c.name, ms.name), "+
 			"COALESCE(rc.name, c.name, ms.name), "+
 			"COALESCE(rc.name, c.name, ms.name), "+
 			"COALESCE(c.web, ms.link), "+
@@ -259,7 +260,7 @@ func (c *CNCMySQLHandler) ListRecordInfo(from *time.Time, until *time.Time) ([]D
 		err := rows.Scan(
 			&row.ID, &row.Date, &row.Hosted, &row.Type, &row.DescEN, &row.DescCS, &row.DateIssued, &row.License, &row.Authors,
 			&row.ContactPerson.Firstname, &row.ContactPerson.Lastname, &row.ContactPerson.Email,
-			&row.ContactPerson.Affiliation, &row.TitleEN, &row.TitleCS, &row.Link,
+			&row.ContactPerson.Affiliation, &row.Name, &row.TitleEN, &row.TitleCS, &row.Link,
 			&row.CorpusData.Size, &locale, &row.CorpusData.Keywords,
 		)
 		if err != nil {
