@@ -126,7 +126,7 @@ func (c *CNCHook) cmdiLindatClarinRecordFromData(data *cncdb.DBData) oaipmh.OAIP
 			metadata.Resources.ResourceProxyList,
 			formats.CMDIResourceProxy{
 				ID:           fmt.Sprintf("sp_%s", recordID),
-				ResourceType: formats.CMDIResourceType{MimeType: "application/http", Value: formats.RTSearchPage},
+				ResourceType: formats.CMDIResourceType{MimeType: "text/html", Value: formats.RTSearchPage},
 				ResourceRef:  getKontextPath(data.Name),
 			},
 		)

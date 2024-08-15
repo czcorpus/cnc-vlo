@@ -149,8 +149,8 @@ func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 				"u.email, "+
 				"u.affiliation, "+
 				"COALESCE(c.name, ms.name), "+
-				"IFNULL(CONCAT(c.name, ': ', c.description_en), c.name), "+
-				"IFNULL(CONCAT(c.name, ': ', c.description_cs), c.name), "+
+				"COALESCE(rc.name, c.name, ms.name), "+
+				"COALESCE(rc.name, c.name, ms.name), "+
 				"COALESCE(c.web, ms.link), "+
 				"c.size, c.locale, GROUP_CONCAT(k.label_en ORDER BY k.display_order SEPARATOR ',') "+
 				"FROM vlo_metadata_common AS m "+
@@ -161,6 +161,7 @@ func (c *CNCMySQLHandler) GetRecordInfo(identifier string) (*DBData, error) {
 				"LEFT JOIN kontext_keyword AS k ON kc.keyword_id = k.id "+
 				"LEFT JOIN corplist_corpus AS cc ON c.id = cc.corpus_id "+
 				"LEFT JOIN corplist_parallel_corpus AS cpc ON cpc.parallel_corpus_id = c.parallel_corpus_id "+
+				"LEFT JOIN registry_conf AS rc ON mc.corpus_name = rc.corpus_name "+
 				"JOIN %s AS u ON m.contact_user_id = u.id "+
 				"WHERE m.id = ? AND m.deleted = FALSE "+
 				"AND ((m.type = 'corpus' AND cc.corplist_id = ?) OR (cpc.corplist_id = ?) OR m.type != 'corpus') "+
@@ -224,8 +225,9 @@ func (c *CNCMySQLHandler) ListRecordInfo(from *time.Time, until *time.Time) ([]D
 			"u.%s, "+
 			"u.email, "+
 			"u.affiliation, "+
-			"IFNULL(CONCAT(c.name, ': ', c.description_en), c.name), "+
-			"IFNULL(CONCAT(c.name, ': ', c.description_cs), c.name), "+
+			"COALESCE(c.name, ms.name), "+
+			"COALESCE(rc.name, c.name, ms.name), "+
+			"COALESCE(rc.name, c.name, ms.name), "+
 			"COALESCE(c.web, ms.link), "+
 			"c.size, "+
 			"c.locale, "+
@@ -238,6 +240,7 @@ func (c *CNCMySQLHandler) ListRecordInfo(from *time.Time, until *time.Time) ([]D
 			"LEFT JOIN kontext_keyword AS k ON kc.keyword_id = k.id "+
 			"LEFT JOIN corplist_corpus AS cc ON c.id = cc.corpus_id "+
 			"LEFT JOIN corplist_parallel_corpus AS cpc ON cpc.parallel_corpus_id = c.parallel_corpus_id "+
+			"LEFT JOIN registry_conf AS rc ON mc.corpus_name = rc.corpus_name "+
 			"JOIN %s AS u ON m.contact_user_id = u.id ",
 		c.overrides.UserTableFirstNameCol, c.overrides.UserTableLastNameCol,
 		c.overrides.CorporaTableName, c.overrides.UserTableName,
@@ -257,7 +260,7 @@ func (c *CNCMySQLHandler) ListRecordInfo(from *time.Time, until *time.Time) ([]D
 		err := rows.Scan(
 			&row.ID, &row.Date, &row.Hosted, &row.Type, &row.DescEN, &row.DescCS, &row.DateIssued, &row.License, &row.Authors,
 			&row.ContactPerson.Firstname, &row.ContactPerson.Lastname, &row.ContactPerson.Email,
-			&row.ContactPerson.Affiliation, &row.TitleEN, &row.TitleCS, &row.Link,
+			&row.ContactPerson.Affiliation, &row.Name, &row.TitleEN, &row.TitleCS, &row.Link,
 			&row.CorpusData.Size, &locale, &row.CorpusData.Keywords,
 		)
 		if err != nil {
