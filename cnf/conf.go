@@ -39,8 +39,7 @@ type Conf struct {
 	ListenPort             int                 `json:"listenPort"`
 	ServerReadTimeoutSecs  int                 `json:"serverReadTimeoutSecs"`
 	ServerWriteTimeoutSecs int                 `json:"serverWriteTimeoutSecs"`
-	LogFile                string              `json:"logFile"`
-	LogLevel               logging.LogLevel    `json:"logLevel"`
+	Logging                logging.LoggingConf `json:"logging"`
 	TimeZone               string              `json:"timeZone"`
 	CNCDB                  cncdb.DatabaseSetup `json:"cncDb"`
 	RepositoryInfo         RepositoryInfo      `json:"repositoryInfo"`
@@ -59,10 +58,6 @@ type RepositoryInfo struct {
 
 type MetadataValues struct {
 	Publisher string `json:"publisher"`
-}
-
-func (conf *Conf) IsDebugMode() bool {
-	return conf.LogLevel == "debug"
 }
 
 func (conf *Conf) TimezoneLocation() *time.Location {

@@ -52,7 +52,7 @@ func runApiServer(
 	exitEvent chan os.Signal,
 	db *cncdb.CNCMySQLHandler,
 ) {
-	if !conf.LogLevel.IsDebugMode() {
+	if !conf.Logging.Level.IsDebugMode() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
@@ -118,7 +118,7 @@ func main() {
 		return
 	}
 	conf := cnf.LoadConfig(flag.Arg(1))
-	logging.SetupLogging(conf.LogFile, conf.LogLevel)
+	logging.SetupLogging(conf.Logging)
 	log.Info().Msg("Starting CNC-VLO node")
 	cnf.ValidateAndDefaults(conf)
 	syscallChan := make(chan os.Signal, 1)
