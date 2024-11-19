@@ -3,8 +3,9 @@
     "listenPort": 8080,
     "serverReadTimeoutSecs": 120,
     "serverWriteTimeoutSecs": 60,
-    "logFile": null,
-    "logLevel": "debug",
+    "logging": {
+        "level": "debug"
+    },
     "timeZone": "UTC",
     "cncDb": {
         "host": "localhost:3306",
